@@ -72,16 +72,27 @@ ensure_env_file() {
   fi
 }
 
-load_env() {
-  # shellcheck disable=SC2046
-  set -a && . ./.env && set +a
+# Read a single VAR from .env without sourcing (handles spaces safely)
+read_env_var() {
+  local key="$1"
+  local default_val="$2"
+  local val
+  val=$(awk -F'=' -v k="$key" 'BEGIN{OFS="="} $1==k { $1=""; sub(/^=/,""); print $0 }' .env | tail -n1)
+  if [[ -z "$val" ]]; then
+    echo "$default_val"
+  else
+    echo "$val"
+  fi
 }
 
 ensure_network() {
-  local net_name="${HOMELAB_NET_NAME:-homelab}"
+  local net_name
+  net_name=$(read_env_var HOMELAB_NET_NAME homelab)
   if ! docker network inspect "$net_name" >/dev/null 2>&1; then
-    local subnet="${HOMELAB_SUBNET:-172.24.0.0/16}"
-    local gateway="${HOMELAB_GATEWAY:-172.24.0.1}"
+    local subnet
+    local gateway
+    subnet=$(read_env_var HOMELAB_SUBNET 172.24.0.0/16)
+    gateway=$(read_env_var HOMELAB_GATEWAY 172.24.0.1)
     log "Creating external network '$net_name' ($subnet, gw $gateway)"
     docker network create "$net_name" \
       --driver bridge \
@@ -103,7 +114,6 @@ main() {
   ensure_packages
   install_docker_if_needed
   ensure_env_file
-  load_env
   ensure_network
   compose_up
   log "Done."

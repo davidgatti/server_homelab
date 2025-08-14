@@ -1,0 +1,29 @@
+name: Validate
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Docker Compose plugin
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y docker-compose-plugin
+
+      - name: Validate env variables
+        run: |
+          chmod +x scripts/validate_env.sh
+          ./scripts/validate_env.sh -f .env.example
+
+      - name: docker compose config
+        run: |
+          docker compose --env-file .env.example -f compose.yaml config
+

@@ -1,4 +1,4 @@
-.PHONY: help bootstrap up down ps logs test-fresh config validate
+.PHONY: help bootstrap up down ps logs test-fresh down-test ps-test config validate
 
 help:
 	@echo "Targets:"
@@ -9,6 +9,8 @@ help:
 	@echo "  make logs        Tail logs"
 	@echo "  make config      Validate compose config"
 	@echo "  make test-fresh  Simulate fresh Ubuntu server via container"
+	@echo "  make down-test   Tear down fresh-test stack (homelab-test)"
+	@echo "  make ps-test     Show fresh-test stack status"
 	@echo "  make validate    Check env vars and IP conflicts"
 
 bootstrap:
@@ -31,6 +33,12 @@ config:
 
 test-fresh:
 	./scripts/test_fresh_ubuntu.sh
+
+down-test:
+	COMPOSE_PROJECT_NAME=homelab-test docker compose --env-file .env -f compose.yaml down -v --remove-orphans
+
+ps-test:
+	COMPOSE_PROJECT_NAME=homelab-test docker compose --env-file .env -f compose.yaml ps
 
 validate:
 	./scripts/validate_env.sh
