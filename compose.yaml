@@ -11,6 +11,9 @@ services:
       - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256 --auth-local=peer
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    labels:
+      - "prometheus.scrape=false"
+      - "prometheus.job=postgres"
     networks:
       homelab:
         ipv4_address: ${POSTGRES_IP}
@@ -42,6 +45,11 @@ services:
       - WATCHTOWER_NOTIFICATION_URL=${WATCHTOWER_NOTIFICATION_URL}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      - "prometheus.scrape=true"
+      - "prometheus.port=8080"
+      - "prometheus.job=watchtower"
+      - "prometheus.path=/v1/metrics"
     networks:
       homelab:
         ipv4_address: ${WATCHTOWER_IP}
@@ -71,6 +79,11 @@ services:
     volumes:
       - postgres-backups:/backups
       - /etc/localtime:/etc/localtime:ro
+    labels:
+      - "prometheus.scrape=true"
+      - "prometheus.port=8080"
+      - "prometheus.job=postgres-backup"
+      - "prometheus.path=/metrics"
     networks:
       homelab:
         ipv4_address: ${POSTGRES_BACKUP_IP}
@@ -101,7 +114,8 @@ services:
       - BACKUP_RETENTION_DAYS=${BACKUP_RETENTION_DAYS:-30}
       - BACKUP_STOP_DURING_BACKUP_LABEL=docker-volume-backup.stop-during-backup=true
     labels:
-      - "prometheus.io/scrape=true"
+      - "prometheus.scrape=false"
+      - "prometheus.job=volume-backup"
     volumes:
       - postgres-data:/backup/postgres-data:ro
       - postgres-backups:/backup/postgres-backups:ro
@@ -130,6 +144,9 @@ services:
       - PGADMIN_CONFIG_LOGIN_BANNER="HomeLab PostgreSQL Admin"
     volumes:
       - pgadmin-data:/var/lib/pgadmin
+    labels:
+      - "prometheus.scrape=false"
+      - "prometheus.job=pgadmin"
     networks:
       homelab:
         ipv4_address: ${PGADMIN_IP}
@@ -154,6 +171,11 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
       - ./monitoring/grafana.ini:/etc/grafana/grafana.ini:ro
+    labels:
+      - "prometheus.scrape=true"
+      - "prometheus.port=80"
+      - "prometheus.job=grafana"
+      - "prometheus.path=/metrics"
     networks:
       homelab:
         ipv4_address: ${GRAFANA_IP}
@@ -174,6 +196,12 @@ services:
     volumes:
       - prometheus-data:/prometheus
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+      - "prometheus.scrape=true"
+      - "prometheus.port=80"
+      - "prometheus.job=prometheus"
+      - "prometheus.path=/metrics"
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
