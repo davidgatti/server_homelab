@@ -115,6 +115,26 @@ services:
         reservations:
           memory: ${VOLUME_BACKUP_MEMORY_RESERVATION:-256M}
 
+  pgweb:
+    image: sosedoff/pgweb
+    container_name: pgweb
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ:-Europe/Rome}
+    command: ["pgweb", "--bind=0.0.0.0", "--listen=80", "--skip-open"]
+    networks:
+      homelab:
+        ipv4_address: ${PGWEB_IP}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: ${PGWEB_MEMORY_LIMIT:-256M}
+        reservations:
+          memory: ${PGWEB_MEMORY_RESERVATION:-128M}
+
 volumes:
   postgres-data:
     driver: local
