@@ -90,6 +90,31 @@ services:
       retries: 3
       start_period: 30s
 
+  volume-backup:
+    image: offen/docker-volume-backup:latest
+    container_name: volume-backup
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ:-Europe/Rome}
+      - BACKUP_CRON_EXPRESSION=${VOLUME_BACKUP_SCHEDULE:-0 3 * * *}
+      - BACKUP_FILENAME=backup-%Y%m%d-%H%M%S.tar.gz
+      - BACKUP_RETENTION_DAYS=${BACKUP_RETENTION_DAYS:-30}
+      - BACKUP_STOP_DURING_BACKUP_LABEL=docker-volume-backup.stop-during-backup=true
+    volumes:
+      - postgres-data:/backup/postgres-data:ro
+      - postgres-backups:/backup/postgres-backups:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${BACKUP_DIR}/volumes:/archive
+    networks:
+      homelab:
+        ipv4_address: ${VOLUME_BACKUP_IP}
+    deploy:
+      resources:
+        limits:
+          memory: ${VOLUME_BACKUP_MEMORY_LIMIT:-512M}
+        reservations:
+          memory: ${VOLUME_BACKUP_MEMORY_RESERVATION:-256M}
+
 volumes:
   postgres-data:
     driver: local
