@@ -100,6 +100,8 @@ services:
       - BACKUP_FILENAME=backup-%Y%m%d-%H%M%S.tar.gz
       - BACKUP_RETENTION_DAYS=${BACKUP_RETENTION_DAYS:-30}
       - BACKUP_STOP_DURING_BACKUP_LABEL=docker-volume-backup.stop-during-backup=true
+    labels:
+      - "prometheus.io/scrape=true"
     volumes:
       - postgres-data:/backup/postgres-data:ro
       - postgres-backups:/backup/postgres-backups:ro
@@ -141,12 +143,35 @@ services:
         reservations:
           memory: ${PGADMIN_MEMORY_RESERVATION:-256M}
 
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    user: "0"
+    environment:
+      - TZ=${TZ:-Europe/Rome}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana.ini:/etc/grafana/grafana.ini:ro
+    networks:
+      homelab:
+        ipv4_address: ${GRAFANA_IP}
+    deploy:
+      resources:
+        limits:
+          memory: ${GRAFANA_MEMORY_LIMIT:-512M}
+        reservations:
+          memory: ${GRAFANA_MEMORY_RESERVATION:-256M}
+
 volumes:
   postgres-data:
     driver: local
   postgres-backups:
     driver: local
   pgadmin-data:
+    driver: local
+  grafana-data:
     driver: local
 
 networks:
