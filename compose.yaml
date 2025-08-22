@@ -52,8 +52,48 @@ services:
         reservations:
           memory: ${WATCHTOWER_MEMORY_RESERVATION:-128M}
 
+  postgres-backup:
+    image: prodrigestivill/postgres-backup-local
+    container_name: postgres-backup
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ:-Europe/Rome}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_EXTRA_OPTS=${POSTGRES_BACKUP_OPTS:--Z6 --schema-only --blobs}
+      - SCHEDULE=${POSTGRES_BACKUP_SCHEDULE:-0 2 * * *}
+      - BACKUP_KEEP_DAYS=${BACKUP_RETENTION_DAYS:-30}
+      - BACKUP_KEEP_WEEKS=${POSTGRES_BACKUP_KEEP_WEEKS:-4}
+      - BACKUP_KEEP_MONTHS=${POSTGRES_BACKUP_KEEP_MONTHS:-6}
+      - HEALTHCHECK_PORT=8080
+    volumes:
+      - postgres-backups:/backups
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      homelab:
+        ipv4_address: ${POSTGRES_BACKUP_IP}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: ${POSTGRES_BACKUP_MEMORY_LIMIT:-512M}
+        reservations:
+          memory: ${POSTGRES_BACKUP_MEMORY_RESERVATION:-256M}
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/"]
+      interval: 5m
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+
 volumes:
   postgres-data:
+    driver: local
+  postgres-backups:
     driver: local
 
 networks:
