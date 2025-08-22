@@ -8,26 +8,19 @@ services:
       - POSTGRES_USER=${POSTGRES_USER:-admin}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
       - POSTGRES_DB=${POSTGRES_DB:-default}
-      # Additional security and performance settings
       - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256 --auth-local=peer
     volumes:
       - postgres-data:/var/lib/postgresql/data
-      # Optional: Add custom configuration
-      # - ./postgres/postgresql.conf:/etc/postgresql/postgresql.conf:ro
     networks:
       homelab:
-        ipv4_address: ${POSTGRES_IP:-192.168.10.12}
-    ports:
-      - "5432:5432"
+        ipv4_address: ${POSTGRES_IP}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-admin} -d ${POSTGRES_DB:-default}"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 30s
-    # Security: run as non-root user
     user: postgres
-    # Resource limits (configurable via environment)
     deploy:
       resources:
         limits:
@@ -38,19 +31,7 @@ services:
 volumes:
   postgres-data:
     driver: local
-    # Optional: specify driver options for better performance
-    # driver_opts:
-    #   type: none
-    #   o: bind
-    #   device: ${BACKUP_DIR:-/opt/homelab}/postgres-data
 
 networks:
   homelab:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: ${HOMELAB_SUBNET:-192.168.10.0/24}
-          gateway: ${HOMELAB_GATEWAY:-192.168.10.1}
-    # Optional: Add custom DNS
-    driver_opts:
-      com.docker.network.bridge.name: homelab_br
+    external: true
