@@ -234,6 +234,7 @@ volumes:
 
 networks:
   homelab:
+    name: homelab
     driver: macvlan
     driver_opts:
       parent: eno1
