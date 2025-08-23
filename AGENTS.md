@@ -4,17 +4,24 @@
 
 ### Core Beliefs
 
-- **Incremental progress over big bangs** - Small changes that compile and pass tests
-- **Learning from existing code** - Study and plan before implementing
-- **Pragmatic over dogmatic** - Adapt to project reality
-- **Clear intent over clever code** - Be boring and obvious
+- **Incremental progress over big bangs** - Small infrastructure changes that can be tested
+- **Learning from existing patterns** - Study current setup and extend consistently
+- **Pragmatic over dogmatic** - Adapt to infrastructure reality and constraints
+- **Clear intent over clever configurations** - Be boring and obvious with config
 
 ### Simplicity Means
 
-- Single responsibility per function/class
-- Avoid premature abstractions
-- No clever tricks - choose the boring solution
-- If you need to explain it, it's too complex
+- Single responsibility per service/container
+- Avoid premature abstractions in compose files
+- No clever tricks - choose the boring infrastructure solution
+- If you need to explain the architecture, it's too complex
+
+### Infrastructure-Specific Principles
+
+- **Security by default** - Non-root containers unless absolutely necessary
+- **Observable by design** - All services should expose metrics/health
+- **Declarative over imperative** - Prefer compose files over manual commands
+- **Testable changes** - Validate with `./homelab.sh status` after changes
 
 ## Process
 
@@ -34,11 +41,20 @@ Break complex work into 3-5 stages. Document in `IMPLEMENTATION_PLAN.md`:
 
 ### 2. Implementation Flow
 
-1. **Understand** - Study existing patterns in codebase
-2. **Test** - Write test first (red)
-3. **Implement** - Minimal code to pass (green)
-4. **Refactor** - Clean up with tests passing
-5. **Commit** - With clear message linking to plan
+1. **Understand** - Study existing patterns in `compose.yaml` and configs
+2. **Plan** - Document changes in terms of services/networks/volumes
+3. **Test** - Validate current state with `./homelab.sh status`
+4. **Implement** - Make minimal changes to achieve goal
+5. **Verify** - Test with `./homelab.sh restart` and status check
+6. **Document** - Update ARCHITECTURE.md with patterns used
+
+### Infrastructure Testing
+
+- **Before changes**: `./homelab.sh status` to document current state
+- **After changes**: Verify all services healthy and accessible
+- **Network validation**: Confirm IPs and connectivity work
+- **Configuration validation**: Services start with new configs
+- **Rollback plan**: Always know how to revert changes
 
 ### 3. When Stuck (After 3 Attempts)
 
@@ -65,25 +81,30 @@ Break complex work into 3-5 stages. Document in `IMPLEMENTATION_PLAN.md`:
 
 ## Technical Standards
 
-### Architecture Principles
+### Infrastructure Principles
 
-- **Composition over inheritance** - Use dependency injection
-- **Interfaces over singletons** - Enable testing and flexibility
-- **Explicit over implicit** - Clear data flow and dependencies
-- **Test-driven when possible** - Never disable tests, fix them
+- **Security layering** - Docker daemon (root) → User commands → Non-root containers
+- **Network isolation** - macvlan for direct LAN access, no unnecessary host access
+- **Configuration externalization** - Use `configs/` directory for service configs
+- **Service discovery** - Prometheus labels for automatic monitoring
+- **Resource constraints** - Always define memory/CPU limits
+- **Health monitoring** - Implement health checks for critical services
 
-### Code Quality
+### Infrastructure Quality
 
-- **Every commit must**:
-  - Compile successfully
-  - Pass all existing tests
-  - Include tests for new functionality
-  - Follow project formatting/linting
+- **Every change must**:
+  - Maintain or improve security posture
+  - Pass health checks after restart
+  - Preserve existing service functionality
+  - Follow established IP allocation patterns
+  - Include appropriate Prometheus labels
 
-- **Before committing**:
-  - Run formatters/linters
-  - Self-review changes
-  - Ensure commit message explains "why"
+- **Before committing infrastructure changes**:
+  - Test full restart: `./homelab.sh restart`
+  - Verify all services accessible via assigned IPs
+  - Check monitoring targets in Prometheus
+  - Ensure configuration files are properly mounted
+  - Validate resource usage is within limits
 
 ### Error Handling
 
@@ -122,20 +143,23 @@ When multiple valid approaches exist, choose based on:
 
 ### Definition of Done
 
-- [ ] Tests written and passing
-- [ ] Code follows project conventions
-- [ ] No linter/formatter warnings
-- [ ] Commit messages are clear
-- [ ] Implementation matches plan
-- [ ] No TODOs without issue numbers
+- [ ] Services start successfully with `./homelab.sh start`
+- [ ] All health checks passing
+- [ ] Network connectivity verified (can access services by IP)
+- [ ] Monitoring integration working (Prometheus targets)
+- [ ] Configuration files properly mounted and valid
+- [ ] Resource limits appropriate and tested
+- [ ] Security posture maintained (non-root where possible)
+- [ ] ARCHITECTURE.md updated with any new patterns
 
-### Test Guidelines
+### Infrastructure Testing Guidelines
 
-- Test behavior, not implementation
-- One assertion per test when possible
-- Clear test names describing scenario
-- Use existing test utilities/helpers
-- Tests should be deterministic
+- Test service isolation (containers can't access host inappropriately)
+- Verify network connectivity between services when required
+- Test configuration reloads without container restart when possible
+- Validate backup/restore procedures for stateful services
+- Check service discovery and monitoring integration
+- Test failure scenarios (what happens if service goes down)
 
 ## Important Reminders
 
