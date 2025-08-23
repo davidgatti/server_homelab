@@ -237,7 +237,7 @@ networks:
     name: homelab
     driver: macvlan
     driver_opts:
-      parent: eno1
+      parent: ${NETWORK_INTERFACE:-eno1}
     ipam:
       config:
         - subnet: 192.168.3.0/24

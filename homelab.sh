@@ -48,6 +48,22 @@ check_dependencies() {
     fi
 }
 
+# Auto-detect network interface if not set
+detect_network_interface() {
+    if [ -z "${NETWORK_INTERFACE}" ]; then
+        local interface=$(ip route | grep default | awk '{print $5}' | head -1)
+        if [ -n "$interface" ]; then
+            export NETWORK_INTERFACE="$interface"
+            info "Auto-detected network interface: $interface"
+        else
+            error "Could not auto-detect network interface. Please set NETWORK_INTERFACE in .env"
+            exit 1
+        fi
+    else
+        info "Using network interface from .env: $NETWORK_INTERFACE"
+    fi
+}
+
 # Show status of all services
 status() {
     log "HomeLab Status:"
@@ -149,6 +165,7 @@ EOF
 # Main script logic
 main() {
     check_dependencies
+    detect_network_interface
     
     case "${1:-help}" in
         start)

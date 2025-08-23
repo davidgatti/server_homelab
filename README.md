@@ -39,12 +39,10 @@ With a unified Docker Compose solution that is:
    docker context use default
    ```
 
-4. **Find your network interface** (for macvlan setup):
-   ```bash
-   ip route | grep default
-   # Note the interface name (e.g., eno1, eth0, enp1s0)
-   # Update compose.yaml networks.homelab.driver_opts.parent if different
-   ```
+4. **Network interface auto-detection**:
+   - The script automatically detects your default network interface
+   - To override, set `NETWORK_INTERFACE=your_interface` in `.env`
+   - Check your interface with: `ip route | grep default`
 
 ### Project Setup
 
