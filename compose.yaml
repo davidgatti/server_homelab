@@ -170,7 +170,7 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./monitoring/grafana.ini:/etc/grafana/grafana.ini:ro
+      - ./configs/grafana/grafana.ini:/etc/grafana/grafana.ini:ro
     labels:
       - "prometheus.scrape=true"
       - "prometheus.port=80"
@@ -195,7 +195,7 @@ services:
       - TZ=${TZ:-Europe/Rome}
     volumes:
       - prometheus-data:/prometheus
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./configs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     labels:
       - "prometheus.scrape=true"
