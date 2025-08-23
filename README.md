@@ -19,6 +19,35 @@ With a unified Docker Compose solution that is:
 
 ## Quick Start
 
+### Fresh System Setup (One-time)
+
+**Before running compose for the first time, you need:**
+
+1. **Install Docker** (if not already installed):
+   ```bash
+   curl -fsSL https://get.docker.com | sudo bash
+   ```
+
+2. **Add your user to docker group**:
+   ```bash
+   sudo usermod -aG docker $USER
+   # Log out and back in, or run: newgrp docker
+   ```
+
+3. **Ensure you're using regular Docker** (not rootless):
+   ```bash
+   docker context use default
+   ```
+
+4. **Find your network interface** (for macvlan setup):
+   ```bash
+   ip route | grep default
+   # Note the interface name (e.g., eno1, eth0, enp1s0)
+   # Update compose.yaml networks.homelab.driver_opts.parent if different
+   ```
+
+### Project Setup
+
 1. **Clone and setup**:
    ```bash
    git clone <your-repo>
@@ -63,18 +92,44 @@ All configuration is handled through environment variables in `.env`:
 ## Services
 
 ### PostgreSQL
-- **IP**: 192.168.10.12 (configurable)
+- **IP**: 192.168.3.52 (configurable)
 - **Port**: 5432
 - **Health Checks**: Automatic monitoring
 - **Persistence**: Named volume for data
 - **Security**: Non-root user, SCRAM-SHA-256 auth
 
+### Grafana
+- **IP**: 192.168.3.60 (configurable)
+- **Port**: 80
+- **Features**: Monitoring dashboard, Prometheus integration
+- **Access**: http://192.168.3.60
+
+### Prometheus
+- **IP**: 192.168.3.59 (configurable) 
+- **Port**: 80
+- **Features**: Metrics collection, service discovery
+- **Access**: http://192.168.3.59
+
+### PgAdmin
+- **IP**: 192.168.3.58 (configurable)
+- **Port**: 80
+- **Features**: PostgreSQL administration interface
+- **Access**: http://192.168.3.58
+
 ## Network Architecture
 
-- **Custom Bridge Network**: `homelab` (192.168.10.0/24)
-- **Static IP Assignment**: Each service gets a predictable IP
-- **DNS Resolution**: Services can communicate by name
-- **Port Exposure**: External access when needed
+- **Macvlan Network**: `homelab` (192.168.3.0/24)
+- **Direct LAN Access**: Each service gets a unique IP on your home network
+- **No Port Conflicts**: Services use their native ports (e.g., Grafana on port 80)
+- **Router Integration**: Containers appear as separate devices to your router
+- **DNS Resolution**: Services accessible by IP from any device on your network
+
+### Service IPs (configurable in .env):
+- **PostgreSQL**: 192.168.3.52
+- **Grafana**: 192.168.3.60 
+- **Prometheus**: 192.168.3.59
+- **PgAdmin**: 192.168.3.58
+- **Watchtower**: 192.168.3.57
 
 ## Migration from Old Setup
 
@@ -146,8 +201,41 @@ EOF
 
 ## Troubleshooting
 
+### Docker Setup Issues
+
+- **"Permission denied" when creating network**:
+  ```bash
+  # Check if user is in docker group
+  groups $USER | grep docker
+  # If not in group, run: sudo usermod -aG docker $USER
+  # Then logout/login or run: newgrp docker
+  ```
+
+- **"Cannot connect to Docker daemon"**:
+  ```bash
+  # Check if Docker daemon is running
+  sudo systemctl status docker
+  # Start if needed: sudo systemctl start docker
+  ```
+
+- **"Invalid subinterface vlan name"**:
+  ```bash
+  # Check your network interface name
+  ip route | grep default
+  # Use the correct interface in the macvlan command (e.g., eth0, eno1, enp1s0)
+  ```
+
+- **VS Code Docker extension not showing containers**:
+  ```bash
+  # Ensure you're using regular Docker (not rootless)
+  docker context use default
+  docker context list  # Should show "default" as current
+  ```
+
+### Service Issues
+
 - **Check logs**: `./homelab.sh logs [service]`
-- **Verify network**: `docker network inspect homelab_homelab`
+- **Verify network**: `docker network inspect homelab`
 - **Check health**: `docker compose ps`
 - **Reset everything**: `./homelab.sh stop && docker system prune -f && ./homelab.sh start`
 
@@ -163,7 +251,9 @@ EOF
 
 - [ ] Add more services (Redis, MongoDB, etc.)
 - [ ] Implement automated backups with retention
-- [ ] Add monitoring with Prometheus/Grafana
+- [x] Add monitoring with Prometheus/Grafana ✅
 - [ ] SSL/TLS termination with Traefik
 - [ ] Secret management with Docker secrets
 - [ ] CI/CD integration for updates
+- [ ] Add Alertmanager for notifications
+- [ ] Implement log aggregation with ELK stack

@@ -39,6 +39,9 @@ check_dependencies() {
         exit 1
     fi
     
+    # Ensure we're using regular Docker daemon (not rootless)
+    docker context use default &> /dev/null
+    
     if ! docker compose version &> /dev/null; then
         error "Docker Compose is not available"
         exit 1

@@ -234,4 +234,10 @@ volumes:
 
 networks:
   homelab:
-    external: true
+    driver: macvlan
+    driver_opts:
+      parent: eno1
+    ipam:
+      config:
+        - subnet: 192.168.3.0/24
+          gateway: 192.168.3.1
