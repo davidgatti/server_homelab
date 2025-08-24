@@ -4,9 +4,10 @@ A modern, maintainable approach to home lab infrastructure using Docker Compose.
 
 ## 🎯 Current Status
 
-**System**: Fully optimized for Intel Celeron N3350 (5.6GB RAM)  
-**Configuration**: Environment-free single-file deployment  
-**Last Major Update**: August 24, 2025 - Complete infrastructure optimization  
+**Current Status**: Fully optimized for Intel Celeron N3350 (5.6GB RAM) with dynamic network detection  
+**Configuration**: Environment-free single-file deployment with automatic network switching  
+**Networks**: Auto-detects research (192.168.5.x) or lab (192.168.3.x) environments  
+**Last Major Update**: August 24, 2025 - Dynamic network detection implementation  
 **Documentation**: See `.logbook/` for change history and `.docs/` for guides  
 
 ## Overview
@@ -18,11 +19,11 @@ This project replaces the old approach of:
 - Manual network setup
 
 With a unified Docker Compose solution that is:
-- **Automated**: Single command deployment with health monitoring
+- **Automated**: Single command deployment with health monitoring and network detection
 - **Stable**: Comprehensive health checks and restart policies
 - **Resilient**: Persistent volumes, proper networking, and foundation-first dependencies
 - **Maintainable**: Environment-free configuration with resource optimization
-- **Portable**: Works across different systems with HomeLab-specific tuning
+- **Portable**: Auto-detects network environment (research/lab) with consistent DNS mapping
 
 ## Quick Start
 
@@ -250,6 +251,9 @@ EOF
 ```bash
 # Weekly system health check
 ./scripts/homelab-resource-monitor.sh
+
+# Network detection and current environment
+./homelab.sh network
 
 # Real-time container stats
 docker stats
