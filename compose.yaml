@@ -69,7 +69,7 @@ services:
       - BACKUP_KEEP_MONTHS=${POSTGRES_BACKUP_KEEP_MONTHS:-6}
       - HEALTHCHECK_PORT=8080
     volumes:
-      - postgres-backups:/backups
+      - ${BACKUP_DIR}/postgres:/backups
       - /etc/localtime:/etc/localtime:ro
     networks:
       homelab:
@@ -102,7 +102,7 @@ services:
       - BACKUP_STOP_DURING_BACKUP_LABEL=docker-volume-backup.stop-during-backup=true
     volumes:
       - postgres-data:/backup/postgres-data:ro
-      - postgres-backups:/backup/postgres-backups:ro
+      - ${BACKUP_DIR}/postgres:/backup/postgres:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ${BACKUP_DIR}/volumes:/archive
     networks:
@@ -239,8 +239,6 @@ services:
 
 volumes:
   postgres-data:
-    driver: local
-  postgres-backups:
     driver: local
   pgadmin-data:
     driver: local
