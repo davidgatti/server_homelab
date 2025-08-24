@@ -56,6 +56,7 @@ services:
     image: prodrigestivill/postgres-backup-local
     container_name: postgres-backup
     restart: unless-stopped
+    user: postgres:postgres
     environment:
       - TZ=${TZ:-Europe/Rome}
       - POSTGRES_HOST=postgres
@@ -63,30 +64,23 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_EXTRA_OPTS=${POSTGRES_BACKUP_OPTS:--Z6 --schema-only --blobs}
-      - SCHEDULE=${POSTGRES_BACKUP_SCHEDULE:-0 2 * * *}
+      - SCHEDULE=${POSTGRES_BACKUP_SCHEDULE:-@daily}
       - BACKUP_KEEP_DAYS=${BACKUP_RETENTION_DAYS:-30}
-      - BACKUP_KEEP_WEEKS=${POSTGRES_BACKUP_KEEP_WEEKS:-4}
-      - BACKUP_KEEP_MONTHS=${POSTGRES_BACKUP_KEEP_MONTHS:-6}
+      - BACKUP_KEEP_WEEKS=${BACKUP_RETENTION_WEEKS:-4}
+      - BACKUP_KEEP_MONTHS=${BACKUP_RETENTION_MONTHS:-6}
       - HEALTHCHECK_PORT=8080
     volumes:
-      - ${BACKUP_DIR}/postgres:/backups
-      - /etc/localtime:/etc/localtime:ro
+      - /opt/homelab/backups/postgres:/backups
     networks:
       homelab:
         ipv4_address: ${POSTGRES_BACKUP_IP}
     depends_on:
       postgres:
         condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          memory: ${POSTGRES_BACKUP_MEMORY_LIMIT:-512M}
-        reservations:
-          memory: ${POSTGRES_BACKUP_MEMORY_RESERVATION:-256M}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
-      interval: 5m
-      timeout: 3s
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
       retries: 3
       start_period: 30s
 
@@ -127,11 +121,10 @@ services:
     restart: unless-stopped
     environment:
       - TZ=${TZ:-Europe/Rome}
-      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL}
-      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD}
-      - PGADMIN_LISTEN_PORT=80
-      - PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION=True
-      - PGADMIN_CONFIG_LOGIN_BANNER="HomeLab PostgreSQL Admin"
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+      - PGADMIN_CONFIG_SERVER_MODE=True
+      - PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED=False
     volumes:
       - pgadmin-data:/var/lib/pgadmin
     networks:
@@ -140,18 +133,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/misc/ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-    deploy:
-      resources:
-        limits:
-          memory: ${PGADMIN_MEMORY_LIMIT:-512M}
-        reservations:
-          memory: ${PGADMIN_MEMORY_RESERVATION:-256M}
 
   grafana:
     image: grafana/grafana:latest
@@ -168,6 +149,9 @@ services:
     networks:
       homelab:
         ipv4_address: ${GRAFANA_IP}
+    depends_on:
+      prometheus:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80/api/health"]
       interval: 30s
@@ -203,6 +187,9 @@ services:
     networks:
       homelab:
         ipv4_address: ${PROMETHEUS_IP}
+    depends_on:
+      postgres-exporter:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/-/healthy"]
       interval: 30s
