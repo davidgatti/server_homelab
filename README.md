@@ -2,6 +2,13 @@
 
 A modern, maintainable approach to home lab infrastructure using Docker Compose.
 
+## 🎯 Current Status
+
+**System**: Fully optimized for Intel Celeron N3350 (5.6GB RAM)  
+**Configuration**: Environment-free single-file deployment  
+**Last Major Update**: August 24, 2025 - Complete infrastructure optimization  
+**Documentation**: See `.logbook/` for change history and `.docs/` for guides  
+
 ## Overview
 
 This project replaces the old approach of:
@@ -11,11 +18,11 @@ This project replaces the old approach of:
 - Manual network setup
 
 With a unified Docker Compose solution that is:
-- **Automated**: Single command deployment
-- **Stable**: Health checks and restart policies
-- **Resilient**: Persistent volumes and proper networking
-- **Maintainable**: Environment-based configuration
-- **Portable**: Works across different systems
+- **Automated**: Single command deployment with health monitoring
+- **Stable**: Comprehensive health checks and restart policies
+- **Resilient**: Persistent volumes, proper networking, and foundation-first dependencies
+- **Maintainable**: Environment-free configuration with resource optimization
+- **Portable**: Works across different systems with HomeLab-specific tuning
 
 ## Quick Start
 
@@ -237,13 +244,44 @@ EOF
 - **Check health**: `docker compose ps`
 - **Reset everything**: `./homelab.sh stop && docker system prune -f && ./homelab.sh start`
 
+## 📊 Monitoring & Maintenance
+
+### Resource Monitoring
+```bash
+# Weekly system health check
+./scripts/homelab-resource-monitor.sh
+
+# Real-time container stats
+docker stats
+
+# Service health overview
+docker compose ps
+```
+
+### Change Tracking
+- **Logbook**: `.logbook/` contains timestamped records of all major infrastructure changes
+- **Documentation**: `.docs/` contains comprehensive guides and optimization details
+- **Latest Changes**: Check `.logbook/2025-08-24_1235_homelab-complete-optimization.md` for recent optimizations
+
 ## Security Considerations
 
-- Change default passwords in `.env`
-- Use strong passwords for production
-- Consider firewall rules for exposed ports
-- Regular backups with `./homelab.sh backup`
-- Keep images updated
+- Environment-free configuration eliminates .env security risks
+- Strong passwords configured directly in compose.yaml
+- Resource limits prevent DoS scenarios
+- Regular backups stored at `/opt/homelab/backups/postgres/`
+- Health monitoring enables rapid issue detection
+
+## 🔄 Infrastructure Management
+
+### For AI Agents
+- **Required Reading**: `AGENTS.md` and `.logbook/README.md`
+- **Before Changes**: Check latest logbook entries and run resource monitor
+- **After Changes**: Create timestamped logbook entry documenting modifications
+
+### For Manual Administration
+- **Configuration**: Single file `compose.yaml` (no external dependencies)
+- **Monitoring**: Foundation-first dependency strategy ensures monitoring always available
+- **Resource Management**: Optimized for Intel Celeron systems with 5.6GB RAM
 
 ## Future Enhancements
 

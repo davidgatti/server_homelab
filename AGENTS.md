@@ -1,5 +1,16 @@
 # Development Guidelines
 
+## 📋 Required Reading for AI Agents
+
+**Before making any changes, AI agents MUST:**
+
+1. **Check Latest Logbook Entry**: Review `.logbook/` directory for recent changes and current system state
+2. **Read Current Documentation**: Check `.docs/` for architecture and optimization guides  
+3. **Verify System Status**: Run `./scripts/homelab-resource-monitor.sh` to understand current state
+4. **Document Major Changes**: Create timestamped logbook entries for significant modifications
+
+**Current System State**: Fully optimized HomeLab on Intel Celeron N3350 (5.6GB RAM) with environment-free configuration, resource limits, and foundation-first dependencies. Last major update: 2025-08-24.
+
 ## Philosophy
 
 ### Core Beliefs
@@ -151,6 +162,7 @@ When multiple valid approaches exist, choose based on:
 - [ ] Resource limits appropriate and tested
 - [ ] Security posture maintained (non-root where possible)
 - [ ] ARCHITECTURE.md updated with any new patterns
+- [ ] Logbook entry created for major changes (`.logbook/YYYY-MM-DD_description.md`)
 
 ### Infrastructure Testing Guidelines
 
@@ -160,6 +172,32 @@ When multiple valid approaches exist, choose based on:
 - Validate backup/restore procedures for stateful services
 - Check service discovery and monitoring integration
 - Test failure scenarios (what happens if service goes down)
+
+## 📚 Logbook System
+
+### When to Create Logbook Entries
+
+AI agents must create timestamped logbook entries (`.logbook/YYYY-MM-DD_HHMM_title.md`) for:
+- ✅ Major infrastructure changes or new service additions
+- ✅ Performance optimizations or resource limit modifications
+- ✅ Security updates or configuration migrations
+- ✅ Troubleshooting that results in permanent changes
+
+**Helper Script**: Use `./scripts/logbook-helper.sh 'description'` to generate timestamped templates automatically.
+
+### Logbook Entry Requirements
+
+1. **Timestamp**: Use format `YYYY-MM-DD_HHMM_descriptive-title.md`
+2. **Complete Documentation**: Include rationale, changes made, verification steps
+3. **Future Guidance**: Clear instructions for next AI agents
+4. **Rollback Information**: How to undo changes if needed
+
+### Using Logbook Information
+
+1. **Always check latest entries** before starting work
+2. **Follow established patterns** from previous successful changes
+3. **Update references** if procedures change
+4. **Cross-reference** with `.docs/` for comprehensive context
 
 ## Important Reminders
 
