@@ -12,6 +12,7 @@ This directory contains comprehensive documentation for the HomeLab infrastructu
 - **[TESTING.md](TESTING.md)** - MacVLAN network testing strategies and procedures
 - **[BACKUP-VERIFICATION.md](BACKUP-VERIFICATION.md)** - Docker volume backup service verification guide  
 - **[POSTGRES-BACKUP-VERIFICATION.md](POSTGRES-BACKUP-VERIFICATION.md)** - PostgreSQL backup service verification guide
+- **[POSTGRES-RESTORE.md](POSTGRES-RESTORE.md)** - PostgreSQL backup restoration guide (manual approach)
 
 ## Quick Service Health Checks
 
