@@ -4,18 +4,18 @@ services:
     container_name: postgres
     restart: unless-stopped
     environment:
-      - TZ=${TZ:-Europe/Rome}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+      - TZ=Europe/Rome
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=default
       - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256 --auth-local=peer
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
       homelab:
-        ipv4_address: ${POSTGRES_IP}
+        ipv4_address: 192.168.3.53
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U admin -d default"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -24,33 +24,33 @@ services:
     deploy:
       resources:
         limits:
-          memory: ${POSTGRES_MEMORY_LIMIT:-1G}
+          memory: 1G
         reservations:
-          memory: ${POSTGRES_MEMORY_RESERVATION:-512M}
+          memory: 512M
 
   watchtower:
     image: containrrr/watchtower
     container_name: watchtower
     restart: unless-stopped
     environment:
-      - TZ=${TZ:-Europe/Rome}
+      - TZ=Europe/Rome
       - WATCHTOWER_CLEANUP=true
-      - WATCHTOWER_SCHEDULE=${WATCHTOWER_SCHEDULE:-0 0 4 * * *}
+      - WATCHTOWER_SCHEDULE=0 0 4 * * *
       - WATCHTOWER_INCLUDE_RESTARTING=true
       - WATCHTOWER_INCLUDE_STOPPED=false
-      - WATCHTOWER_NOTIFICATIONS=${WATCHTOWER_NOTIFICATIONS:-shoutrrr}
-      - WATCHTOWER_NOTIFICATION_URL=${WATCHTOWER_NOTIFICATION_URL}
+      - WATCHTOWER_NOTIFICATIONS=shoutrrr
+      - WATCHTOWER_NOTIFICATION_URL=
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       homelab:
-        ipv4_address: ${WATCHTOWER_IP}
+        ipv4_address: 192.168.3.54
     deploy:
       resources:
         limits:
-          memory: ${WATCHTOWER_MEMORY_LIMIT:-256M}
+          memory: 256M
         reservations:
-          memory: ${WATCHTOWER_MEMORY_RESERVATION:-128M}
+          memory: 128M
 
   postgres-backup:
     image: prodrigestivill/postgres-backup-local
@@ -58,22 +58,22 @@ services:
     restart: unless-stopped
     user: postgres:postgres
     environment:
-      - TZ=${TZ:-Europe/Rome}
+      - TZ=Europe/Rome
       - POSTGRES_HOST=postgres
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_EXTRA_OPTS=${POSTGRES_BACKUP_OPTS:--Z6 --schema-only --blobs}
-      - SCHEDULE=${POSTGRES_BACKUP_SCHEDULE:-@daily}
-      - BACKUP_KEEP_DAYS=${BACKUP_RETENTION_DAYS:-30}
-      - BACKUP_KEEP_WEEKS=${BACKUP_RETENTION_WEEKS:-4}
-      - BACKUP_KEEP_MONTHS=${BACKUP_RETENTION_MONTHS:-6}
+      - POSTGRES_DB=default
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_EXTRA_OPTS=-Z6 --schema-only --blobs
+      - SCHEDULE=0 2 * * *
+      - BACKUP_KEEP_DAYS=30
+      - BACKUP_KEEP_WEEKS=4
+      - BACKUP_KEEP_MONTHS=6
       - HEALTHCHECK_PORT=8080
     volumes:
       - /opt/homelab/backups/postgres:/backups
     networks:
       homelab:
-        ipv4_address: ${POSTGRES_BACKUP_IP}
+        ipv4_address: 192.168.3.55
     depends_on:
       postgres:
         condition: service_healthy
@@ -89,19 +89,19 @@ services:
     container_name: volume-backup
     restart: unless-stopped
     environment:
-      - TZ=${TZ:-Europe/Rome}
-      - BACKUP_CRON_EXPRESSION=${VOLUME_BACKUP_SCHEDULE:-0 3 * * *}
+      - TZ=Europe/Rome
+      - BACKUP_CRON_EXPRESSION=0 3 * * *
       - BACKUP_FILENAME=backup-%Y%m%d-%H%M%S.tar.gz
-      - BACKUP_RETENTION_DAYS=${BACKUP_RETENTION_DAYS:-30}
+      - BACKUP_RETENTION_DAYS=30
       - BACKUP_STOP_DURING_BACKUP_LABEL=docker-volume-backup.stop-during-backup=true
     volumes:
       - postgres-data:/backup/postgres-data:ro
-      - ${BACKUP_DIR}/postgres:/backup/postgres:ro
+      - /opt/homelab/backups/postgres:/backup/postgres:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ${BACKUP_DIR}/volumes:/archive
+      - /opt/homelab/backups/volumes:/archive
     networks:
       homelab:
-        ipv4_address: ${VOLUME_BACKUP_IP}
+        ipv4_address: 192.168.3.57
     healthcheck:
       test: ["CMD", "pgrep", "-f", "backup"]
       interval: 30s
@@ -111,28 +111,40 @@ services:
     deploy:
       resources:
         limits:
-          memory: ${VOLUME_BACKUP_MEMORY_LIMIT:-512M}
+          memory: 512M
         reservations:
-          memory: ${VOLUME_BACKUP_MEMORY_RESERVATION:-256M}
+          memory: 256M
 
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: pgadmin
     restart: unless-stopped
     environment:
-      - TZ=${TZ:-Europe/Rome}
-      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
-      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+      - TZ=Europe/Rome
+      - PGADMIN_DEFAULT_EMAIL=admin@example.com
+      - PGADMIN_DEFAULT_PASSWORD=password
       - PGADMIN_CONFIG_SERVER_MODE=True
       - PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED=False
     volumes:
       - pgadmin-data:/var/lib/pgadmin
     networks:
       homelab:
-        ipv4_address: ${PGADMIN_IP}
+        ipv4_address: 192.168.3.58
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/misc/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
 
   grafana:
     image: grafana/grafana:latest
@@ -140,15 +152,15 @@ services:
     restart: unless-stopped
     user: "0"
     environment:
-      - TZ=${TZ:-Europe/Rome}
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - TZ=Europe/Rome
+      - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_METRICS_ENABLED=true
     volumes:
       - grafana-data:/var/lib/grafana
       - ./configs/grafana/grafana.ini:/etc/grafana/grafana.ini:ro
     networks:
       homelab:
-        ipv4_address: ${GRAFANA_IP}
+        ipv4_address: 192.168.3.60
     depends_on:
       prometheus:
         condition: service_healthy
@@ -161,9 +173,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: ${GRAFANA_MEMORY_LIMIT:-512M}
+          memory: 512M
         reservations:
-          memory: ${GRAFANA_MEMORY_RESERVATION:-256M}
+          memory: 256M
 
   prometheus:
     image: prom/prometheus:latest
@@ -171,7 +183,7 @@ services:
     restart: unless-stopped
     user: "0"
     environment:
-      - TZ=${TZ:-Europe/Rome}
+      - TZ=Europe/Rome
     volumes:
       - prometheus-data:/prometheus
       - ./configs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
@@ -186,7 +198,7 @@ services:
       - '--web.enable-lifecycle'
     networks:
       homelab:
-        ipv4_address: ${PROMETHEUS_IP}
+        ipv4_address: 192.168.3.59
     depends_on:
       postgres-exporter:
         condition: service_healthy
@@ -199,9 +211,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: ${PROMETHEUS_MEMORY_LIMIT:-512M}
+          memory: 512M
         reservations:
-          memory: ${PROMETHEUS_MEMORY_RESERVATION:-256M}
+          memory: 256M
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
@@ -220,7 +232,7 @@ services:
       - '--port=80'
     networks:
       homelab:
-        ipv4_address: ${CADVISOR_IP}
+        ipv4_address: 192.168.3.62
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/healthz"]
       interval: 30s
@@ -230,17 +242,17 @@ services:
     deploy:
       resources:
         limits:
-          memory: ${CADVISOR_MEMORY_LIMIT:-256M}
+          memory: 256M
         reservations:
-          memory: ${CADVISOR_MEMORY_RESERVATION:-128M}
+          memory: 128M
 
   postgres-exporter:
     image: prometheuscommunity/postgres-exporter:latest
     container_name: postgres-exporter
     restart: unless-stopped
     environment:
-      - TZ=${TZ:-Europe/Rome}
-      - DATA_SOURCE_NAME=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable
+      - TZ=Europe/Rome
+      - DATA_SOURCE_NAME=postgresql://admin:password@postgres:5432/default?sslmode=disable
     networks:
       homelab:
         ipv4_address: 192.168.3.64
@@ -275,7 +287,7 @@ networks:
     name: homelab
     driver: macvlan
     driver_opts:
-      parent: ${NETWORK_INTERFACE:-eno1}
+      parent: eno1
     ipam:
       config:
         - subnet: 192.168.3.0/24
