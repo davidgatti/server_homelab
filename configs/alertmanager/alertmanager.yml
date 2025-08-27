@@ -1,0 +1,78 @@
+global:
+  smtp_smarthost: 'localhost:587'
+  smtp_from: 'alertmanager@homelab.local'
+  resolve_timeout: 5m
+
+# The directory from which notification templates are read.
+templates:
+- '/etc/alertmanager/templates/*.tmpl'
+
+# The root route on which each incoming alert enters.
+route:
+  # The labels by which incoming alerts are grouped together.
+  group_by: ['alertname', 'cluster', 'service']
+  
+  # When a new group of alerts is created by an incoming alert, wait at
+  # least 'group_wait' to send the initial notification.
+  group_wait: 10s
+  
+  # When the first notification was sent, wait 'group_interval' to send a batch
+  # of new alerts that started firing for that group.
+  group_interval: 10s
+  
+  # If an alert has successfully been sent, wait 'repeat_interval' to
+  # resend them.
+  repeat_interval: 1h
+  
+  # A default receiver
+  receiver: web.hook
+  
+  # All the above attributes are inherited by all child routes and can 
+  # overwritten on each.
+  routes:
+  - match:
+      alertname: Watchdog
+    receiver: web.hook
+  - match_re:
+      severity: critical|warning
+    receiver: web.hook
+
+# Inhibition rules allow to mute a set of alerts given that another alert is
+# firing. We use this to mute any warning-level notifications if the same alert
+# is already critical.
+inhibit_rules:
+- source_match:
+    severity: 'critical'
+  target_match:
+    severity: 'warning'
+  # Apply inhibition if the alertname is the same.
+  equal: ['alertname', 'cluster', 'service']
+
+receivers:
+- name: 'web.hook'
+  webhook_configs:
+  - url: 'http://localhost:5001/'
+    send_resolved: true
+    http_config:
+      basic_auth:
+        username: 'homelab'
+        password: 'secret'
+
+# Example email configuration (uncomment and configure as needed)
+# - name: 'email-alerts'
+#   email_configs:
+#   - to: 'admin@homelab.local'
+#     subject: '[HomeLab] {{ .GroupLabels.alertname }}'
+#     body: |
+#       {{ range .Alerts }}
+#       Alert: {{ .Annotations.summary }}
+#       Description: {{ .Annotations.description }}
+#       {{ end }}
+
+# Example Slack configuration (uncomment and configure as needed)
+# - name: 'slack-alerts'
+#   slack_configs:
+#   - api_url: 'YOUR_SLACK_WEBHOOK_URL'
+#     channel: '#alerts'
+#     title: '[HomeLab] {{ .GroupLabels.alertname }}'
+#     text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'

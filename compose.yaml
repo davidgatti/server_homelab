@@ -154,6 +154,39 @@ services:
           memory: 150M        # Reasonable guarantee
           cpus: '0.05'        # Minimal CPU when idle
 
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Rome
+    volumes:
+      - alertmanager-data:/alertmanager
+      - ./configs/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.56
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--web.external-url=http://${NETWORK_PREFIX:-192.168.5}.56'
+      - '--web.listen-address=0.0.0.0:80'
+      - '--cluster.listen-address=0.0.0.0:9094'
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 200M        # AlertManager for notifications
+          cpus: '0.2'         # Light alerting service
+        reservations:
+          memory: 100M        # Reasonable guarantee
+          cpus: '0.05'        # Minimal CPU when idle
+
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
@@ -163,6 +196,7 @@ services:
       - TZ=Europe/Rome
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_METRICS_ENABLED=true
+      - GF_SERVER_HTTP_PORT=80
     volumes:
       - grafana-data:/var/lib/grafana
       - ./configs/grafana/grafana.ini:/etc/grafana/grafana.ini:ro
@@ -197,6 +231,7 @@ services:
     volumes:
       - prometheus-data:/prometheus
       - ./configs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./configs/prometheus/rules:/etc/prometheus/rules:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -296,6 +331,8 @@ volumes:
   grafana-data:
     driver: local
   prometheus-data:
+    driver: local
+  alertmanager-data:
     driver: local
 
 networks:
