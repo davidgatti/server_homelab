@@ -86,3 +86,40 @@ groups:
     annotations:
       summary: "Watchdog alert"
       description: "This is a watchdog alert to ensure the alerting pipeline is functional."
+
+  # Redis specific alerts
+  - alert: RedisDown
+    expr: redis_up == 0
+    for: 30s
+    labels:
+      severity: critical
+    annotations:
+      summary: "Redis is down on {{ $labels.instance }}"
+      description: "Redis database is down on {{ $labels.instance }}."
+
+  - alert: RedisHighMemoryUsage
+    expr: redis_memory_used_bytes / redis_memory_max_bytes * 100 > 90
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Redis high memory usage on {{ $labels.instance }}"
+      description: "Redis memory usage is above 90% ({{ $value }}%) on {{ $labels.instance }}."
+
+  - alert: RedisHighConnections
+    expr: redis_connected_clients / redis_config_maxclients * 100 > 80
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Redis high connections on {{ $labels.instance }}"
+      description: "Redis has too many connections ({{ $value }}%) on {{ $labels.instance }}."
+
+  - alert: RedisSlowQueries
+    expr: rate(redis_slowlog_length[5m]) > 0
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Redis slow queries detected on {{ $labels.instance }}"
+      description: "Redis is experiencing slow queries on {{ $labels.instance }}."

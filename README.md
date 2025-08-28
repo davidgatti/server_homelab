@@ -4,11 +4,11 @@ A modern, maintainable approach to home lab infrastructure using Docker Compose.
 
 ## 🎯 Current Status
 
-**Current Status**: Complete monitoring and alerting infrastructure (12 services)  
+**Current Status**: Complete monitoring and alerting infrastructure (13 services)  
 **Configuration**: Environment-free single-file deployment with automatic network switching  
 **Networks**: Auto-detects research (192.168.5.x) or lab (192.168.3.x) environments  
-**Services**: PostgreSQL + Prometheus stack + AlertManager + Blackbox monitoring + automated backups  
-**Last Major Update**: August 28, 2025 - Documentation reorganization and expansion planning  
+**Services**: PostgreSQL + Redis + Prometheus stack + AlertManager + Blackbox monitoring + automated backups  
+**Last Major Update**: August 28, 2025 - Added Redis with full monitoring integration  
 **Documentation**: See `.knowledge/` for architecture guides and `TODO.md` for expansion roadmap  
 
 ## Overview
@@ -98,10 +98,11 @@ All configuration is handled through environment variables in `.env`:
 
 ## Services
 
-### Current Stack (12 Services)
+### Current Stack (13 Services)
 
 #### **Core Infrastructure**
 - **PostgreSQL** (192.168.3.53:5432) - Primary database with automated backups
+- **Redis** (192.168.3.63:6379) - High-performance in-memory data store and cache
 - **Watchtower** (192.168.3.57) - Automated container updates
 
 #### **Monitoring & Alerting Stack**
@@ -113,6 +114,7 @@ All configuration is handled through environment variables in `.env`:
 #### **Metrics Exporters**
 - **cAdvisor** (192.168.3.62:80) - Container resource metrics
 - **postgres-exporter** (192.168.3.64:9187) - PostgreSQL database metrics
+- **redis-exporter** (192.168.3.65:9121) - Redis database metrics
 
 #### **Administration & Backup**
 - **pgAdmin** (192.168.3.58:80) - PostgreSQL web administration interface
@@ -137,9 +139,9 @@ All configuration is handled through environment variables in `.env`:
 - **DNS Resolution**: Services accessible by IP from any device on your network
 
 ### Current Service IPs (192.168.3.x subnet):
-- **PostgreSQL**: .53:5432 - **Prometheus**: .59:80 - **Grafana**: .60:80
+- **PostgreSQL**: .53:5432 - **Redis**: .63:6379 - **Prometheus**: .59:80 - **Grafana**: .60:80
 - **AlertManager**: .61:80 - **pgAdmin**: .58:80 - **cAdvisor**: .62:80
-- **postgres-exporter**: .64:9187 - **Blackbox**: .65:80 - **Watchtower**: .57
+- **postgres-exporter**: .64:9187 - **redis-exporter**: .65:9121 - **Blackbox**: .65:80 - **Watchtower**: .57
 - **postgres-backup**: .55:8080 - **volume-backup**: .56
 
 ## Migration from Old Setup

@@ -32,15 +32,17 @@ docker compose ps --format 'table {{.Name}}\t{{.Status}}'
 
 ### Service Information
 
-#### Current Stack (12 Services)
+#### Current Stack (13 Services)
 | Service | IP | Port | Purpose | Health Check |
 |---------|----|----|---------|--------------|
 | `postgres` | 192.168.3.53 | 5432 | Primary database | pg_isready |
+| `redis` | 192.168.3.63 | 6379 | In-memory cache/data store | redis-cli ping |
 | `prometheus` | 192.168.3.59 | 80 | Metrics collection | /-/healthy |
 | `grafana` | 192.168.3.60 | 80 | Monitoring dashboards | /api/health |
 | `alertmanager` | 192.168.3.61 | 80 | Alert management | /-/healthy |
 | `cadvisor` | 192.168.3.62 | 80 | Container metrics | /healthz |
 | `postgres-exporter` | 192.168.3.64 | 9187 | PostgreSQL metrics | /metrics |
+| `redis-exporter` | 192.168.3.65 | 9121 | Redis metrics | Port check |
 | `blackbox-exporter` | 192.168.3.65 | 80 | External monitoring | /metrics |
 | `pgadmin` | 192.168.3.58 | 80 | Database administration | /misc/ping |
 | `postgres-backup` | 192.168.3.55 | 8080 | PostgreSQL backups | HTTP endpoint |
