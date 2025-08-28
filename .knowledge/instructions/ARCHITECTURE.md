@@ -19,7 +19,7 @@ This HomeLab project demonstrates **modern infrastructure best practices** using
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                    Home Network                         │
-│                   192.168.3.0/24                       │
+│                   192.168.3.0/24                        │
 └─────────────────────┬───────────────────────────────────┘
                       │
               ┌───────┴────────┐
@@ -39,11 +39,11 @@ This HomeLab project demonstrates **modern infrastructure best practices** using
                       │
         ┌─────────────┼─────────────┐
         │             │             │
-   ┌────┴───┐   ┌────┴───┐   ┌────┴───┐
+   ┌────┴───┐   ┌─────┴──┐   ┌──────┴───┐
    │Grafana │   │Postgres│   │Prometheus│
-   │ .3.60  │   │ .3.53  │   │ .3.59  │
-   │(port80)│   │(5432)  │   │(port80)│
-   └────────┘   └────────┘   └────────┘
+   │ .3.60  │   │ .3.53  │   │ .3.59    │
+   │(port80)│   │(5432)  │   │(port80)  │
+   └────────┘   └────────┘   └──────────┘
 ```
 
 **Benefits:**
@@ -56,7 +56,7 @@ This HomeLab project demonstrates **modern infrastructure best practices** using
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                System Level (Root)                     │
+│                System Level (Root)                      │
 │  ┌─────────────────────────────────────────────────┐    │
 │  │           Docker Daemon                         │    │
 │  │  • Creates macvlan interfaces                   │    │
@@ -66,7 +66,7 @@ This HomeLab project demonstrates **modern infrastructure best practices** using
 └─────────────────────┬───────────────────────────────────┘
                       │ docker group membership
 ┌─────────────────────┴───────────────────────────────────┐
-│              User Level (Non-Root)                     │
+│              User Level (Non-Root)                      │
 │  ┌─────────────────────────────────────────────────┐    │
 │  │           Docker Client                         │    │
 │  │  • Sends commands to daemon                     │    │
@@ -76,7 +76,7 @@ This HomeLab project demonstrates **modern infrastructure best practices** using
 └─────────────────────┬───────────────────────────────────┘
                       │ container creation
 ┌─────────────────────┴───────────────────────────────────┐
-│            Container Level (Application)               │
+│            Container Level (Application)                │
 │  ┌─────────────────┐ ┌─────────────────┐ ┌───────────┐  │
 │  │   PostgreSQL    │ │    Grafana      │ │   Apps    │  │
 │  │ (postgres user) │ │  (root for :80) │ │(app users)│  │
