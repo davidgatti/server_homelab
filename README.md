@@ -4,11 +4,12 @@ A modern, maintainable approach to home lab infrastructure using Docker Compose.
 
 ## 🎯 Current Status
 
-**Current Status**: Fully optimized for Intel Celeron N3350 (5.6GB RAM) with dynamic network detection  
+**Current Status**: Complete monitoring and alerting infrastructure (12 services)  
 **Configuration**: Environment-free single-file deployment with automatic network switching  
 **Networks**: Auto-detects research (192.168.5.x) or lab (192.168.3.x) environments  
-**Last Major Update**: August 24, 2025 - Dynamic network detection implementation  
-**Documentation**: See `.logbook/` for change history and `.docs/` for guides  
+**Services**: PostgreSQL + Prometheus stack + AlertManager + Blackbox monitoring + automated backups  
+**Last Major Update**: August 28, 2025 - Documentation reorganization and expansion planning  
+**Documentation**: See `.knowledge/` for architecture guides and `TODO.md` for expansion roadmap  
 
 ## Overview
 
@@ -97,45 +98,49 @@ All configuration is handled through environment variables in `.env`:
 
 ## Services
 
+### Current Stack (12 Services)
+
+#### **Core Infrastructure**
+- **PostgreSQL** (192.168.3.53:5432) - Primary database with automated backups
+- **Watchtower** (192.168.3.57) - Automated container updates
+
+#### **Monitoring & Alerting Stack**
+- **Prometheus** (192.168.3.59:80) - Metrics collection and alerting engine
+- **Grafana** (192.168.3.60:80) - Monitoring dashboards and visualization
+- **AlertManager** (192.168.3.61:80) - Alert routing and notification management
+- **Blackbox Exporter** (192.168.3.65:80) - External service monitoring and uptime checks
+
+#### **Metrics Exporters**
+- **cAdvisor** (192.168.3.62:80) - Container resource metrics
+- **postgres-exporter** (192.168.3.64:9187) - PostgreSQL database metrics
+
+#### **Administration & Backup**
+- **pgAdmin** (192.168.3.58:80) - PostgreSQL web administration interface
+- **postgres-backup** (192.168.3.55:8080) - Automated PostgreSQL backup service
+- **volume-backup** (192.168.3.56) - Docker volume backup automation
+
+### Service Features
+- **Health Monitoring**: All services include comprehensive health checks
+- **Resource Optimization**: CPU/memory limits optimized for Celeron N3350 (5.6GB RAM)
+- **Security**: Non-root containers, SCRAM-SHA-256 authentication
+- **Persistence**: Named volumes for all data with automated backup strategies
+- **Network Access**: Direct LAN IPs via MacVLAN - no port conflicts
+
 ### PostgreSQL
-- **IP**: 192.168.3.52 (configurable)
-- **Port**: 5432
-- **Health Checks**: Automatic monitoring
-- **Persistence**: Named volume for data
-- **Security**: Non-root user, SCRAM-SHA-256 auth
-
-### Grafana
-- **IP**: 192.168.3.60 (configurable)
-- **Port**: 80
-- **Features**: Monitoring dashboard, Prometheus integration
-- **Access**: http://192.168.3.60
-
-### Prometheus
-- **IP**: 192.168.3.59 (configurable) 
-- **Port**: 80
-- **Features**: Metrics collection, service discovery
-- **Access**: http://192.168.3.59
-
-### PgAdmin
-- **IP**: 192.168.3.58 (configurable)
-- **Port**: 80
-- **Features**: PostgreSQL administration interface
-- **Access**: http://192.168.3.58
-
 ## Network Architecture
 
-- **Macvlan Network**: `homelab` (192.168.3.0/24)
+- **MacVLAN Network**: `homelab` (auto-detected subnet)
+- **Dynamic Detection**: Supports 192.168.5.x (research) and 192.168.3.x (lab) networks
 - **Direct LAN Access**: Each service gets a unique IP on your home network
 - **No Port Conflicts**: Services use their native ports (e.g., Grafana on port 80)
 - **Router Integration**: Containers appear as separate devices to your router
 - **DNS Resolution**: Services accessible by IP from any device on your network
 
-### Service IPs (configurable in .env):
-- **PostgreSQL**: 192.168.3.52
-- **Grafana**: 192.168.3.60 
-- **Prometheus**: 192.168.3.59
-- **PgAdmin**: 192.168.3.58
-- **Watchtower**: 192.168.3.57
+### Current Service IPs (192.168.3.x subnet):
+- **PostgreSQL**: .53:5432 - **Prometheus**: .59:80 - **Grafana**: .60:80
+- **AlertManager**: .61:80 - **pgAdmin**: .58:80 - **cAdvisor**: .62:80
+- **postgres-exporter**: .64:9187 - **Blackbox**: .65:80 - **Watchtower**: .57
+- **postgres-backup**: .55:8080 - **volume-backup**: .56
 
 ## Migration from Old Setup
 
@@ -263,9 +268,10 @@ docker compose ps
 ```
 
 ### Change Tracking
-- **Logbook**: `.logbook/` contains timestamped records of all major infrastructure changes
-- **Documentation**: `.docs/` contains comprehensive guides and optimization details
-- **Latest Changes**: Check `.logbook/2025-08-24_1235_homelab-complete-optimization.md` for recent optimizations
+- **Logbook**: `.knowledge/logbook/` contains timestamped records of all major infrastructure changes
+- **Documentation**: `.knowledge/instructions/` contains comprehensive guides and architecture details
+- **Expansion Planning**: `TODO.md` contains categorized roadmap for future service additions
+- **Latest Changes**: Check logbook entries for recent optimizations and system updates
 
 ## Security Considerations
 
@@ -278,9 +284,10 @@ docker compose ps
 ## 🔄 Infrastructure Management
 
 ### For AI Agents
-- **Required Reading**: `AGENTS.md` and `.logbook/README.md`
-- **Before Changes**: Check latest logbook entries and run resource monitor
+- **Required Reading**: `.knowledge/instructions/AGENTS.md` and `.knowledge/logbook/README.md`
+- **Before Changes**: Check latest logbook entries and run status monitoring
 - **After Changes**: Create timestamped logbook entry documenting modifications
+- **Architecture Guide**: `.knowledge/instructions/ARCHITECTURE.md` for system understanding
 
 ### For Manual Administration
 - **Configuration**: Single file `compose.yaml` (no external dependencies)

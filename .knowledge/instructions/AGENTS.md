@@ -4,12 +4,13 @@
 
 **Before making any changes, AI agents MUST:**
 
-1. **Check Latest Logbook Entry**: Review `.logbook/` directory for recent changes and current system state
-2. **Read Current Documentation**: Check `.docs/` for architecture and optimization guides  
-3. **Verify System Status**: Run `./scripts/homelab-resource-monitor.sh` to understand current state
-4. **Document Major Changes**: Create timestamped logbook entries for significant modifications
+1. **Check Latest Logbook Entry**: Review `.knowledge/logbook/` directory for recent changes and current system state
+2. **Read Current Documentation**: Check `.knowledge/instructions/` for architecture and optimization guides  
+3. **Review Expansion Planning**: Check `TODO.md` in project root for planned service additions
+4. **Verify System Status**: Run `./homelab.sh status` to understand current state
+5. **Document Major Changes**: Create timestamped logbook entries for significant modifications
 
-**Current System State**: Fully optimized HomeLab on Intel Celeron N3350 (5.6GB RAM) with environment-free configuration, resource limits, and foundation-first dependencies. Last major update: 2025-08-24.
+**Current System State**: Complete monitoring infrastructure (12 services) on Intel Celeron N3350 (5.6GB RAM) with foundation-first dependencies and dynamic network detection. Last major update: 2025-08-28.
 
 ## Philosophy
 
@@ -66,6 +67,7 @@ Break complex work into 3-5 stages. Document in `IMPLEMENTATION_PLAN.md`:
 - **Network validation**: Confirm IPs and connectivity work
 - **Configuration validation**: Services start with new configs
 - **Rollback plan**: Always know how to revert changes
+- **Resource monitoring**: Check system resources stay within limits
 
 ### 3. When Stuck (After 3 Attempts)
 

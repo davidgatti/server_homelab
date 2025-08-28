@@ -5,60 +5,53 @@ This directory contains comprehensive documentation for the HomeLab infrastructu
 
 ## Documentation Files
 
-### Core Architecture
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Overall system architecture and design principles
+### Core Architecture & Strategy
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Complete system architecture, security model, and service health monitoring
+- **[DEPENDENCY-STRATEGY.md](DEPENDENCY-STRATEGY.md)** - Foundation-first dependency strategy and startup sequencing
+- **[AGENTS.md](AGENTS.md)** - Development guidelines and required reading for AI agents
 
 ### Testing & Verification
 - **[TESTING.md](TESTING.md)** - MacVLAN network testing strategies and procedures
 - **[BACKUP-VERIFICATION.md](BACKUP-VERIFICATION.md)** - Docker volume backup service verification guide  
 - **[POSTGRES-BACKUP-VERIFICATION.md](POSTGRES-BACKUP-VERIFICATION.md)** - PostgreSQL backup service verification guide
-- **[POSTGRES-RESTORE.md](POSTGRES-RESTORE.md)** - PostgreSQL backup restoration guide (manual approach)
+- **[POSTGRES-RESTORE.md](POSTGRES-RESTORE.md)** - PostgreSQL backup restoration guide
 
-## Quick Service Health Checks
+## Quick Reference
 
-### Volume Backup Service
+### Daily Health Checks
 ```bash
-# Quick daily check
-ls -la /opt/homelab/backups/volumes/backup-$(date +%Y%m%d)-030000.tar.gz && docker ps | grep volume-backup
+# Overall system status
+./homelab.sh status
+
+# Service health overview
+docker compose ps --format 'table {{.Name}}\t{{.Status}}'
+
+# Resource monitoring (weekly)
+./scripts/homelab-resource-monitor.sh
 ```
 
-### PostgreSQL Backup Service  
-```bash
-# Quick daily check
-TODAY=$(date +%Y%m%d)
-docker exec postgres-backup ls /backups/daily/default-${TODAY}.sql.gz && docker ps | grep postgres-backup
-```
+### Service Information
 
-### MacVLAN Network Connectivity Test
-```bash
-# Test any service (example: cAdvisor)
-docker run --rm --network homelab --ip 192.168.3.100 alpine:latest sh -c "
-  apk add --no-cache curl > /dev/null 2>&1
-  curl -s http://192.168.3.62:80/metrics | head -5
-"
-```
-
-## Service Information
+#### Current Stack (12 Services)
+| Service | IP | Port | Purpose | Health Check |
+|---------|----|----|---------|--------------|
+| `postgres` | 192.168.3.53 | 5432 | Primary database | pg_isready |
+| `prometheus` | 192.168.3.59 | 80 | Metrics collection | /-/healthy |
+| `grafana` | 192.168.3.60 | 80 | Monitoring dashboards | /api/health |
+| `alertmanager` | 192.168.3.61 | 80 | Alert management | /-/healthy |
+| `cadvisor` | 192.168.3.62 | 80 | Container metrics | /healthz |
+| `postgres-exporter` | 192.168.3.64 | 9187 | PostgreSQL metrics | /metrics |
+| `blackbox-exporter` | 192.168.3.65 | 80 | External monitoring | /metrics |
+| `pgadmin` | 192.168.3.58 | 80 | Database administration | /misc/ping |
+| `postgres-backup` | 192.168.3.55 | 8080 | PostgreSQL backups | HTTP endpoint |
+| `volume-backup` | 192.168.3.56 | - | Volume backups | Process check |
+| `watchtower` | 192.168.3.57 | - | Container updates | Process check |
 
 ### Backup Services
 | Service | Schedule | Type | Health Check |
 |---------|----------|------|--------------|
 | `volume-backup` | 3:00 AM daily | Docker volumes | File existence |
 | `postgres-backup` | 2:00 AM daily | PostgreSQL dumps | HTTP endpoint (port 8080) |
-
-### Monitoring Services  
-| Service | Port | IP | Purpose |
-|---------|------|----|---------| 
-| `prometheus` | 80 | 192.168.3.59 | Metrics collection |
-| `grafana` | 80 | 192.168.3.60 | Metrics visualization |
-| `cadvisor` | 80 | 192.168.3.62 | Container metrics |
-| `postgres-exporter` | 9187 | 192.168.3.64 | PostgreSQL metrics |
-
-### Database Services
-| Service | Port | IP | Purpose |
-|---------|------|----|---------| 
-| `postgres` | 5432 | 192.168.3.53 | Main database |
-| `pgadmin` | 80 | 192.168.3.58 | Database administration |
 
 ## Network Configuration
 - **Subnet**: 192.168.3.0/24

@@ -384,6 +384,46 @@ docker inspect service-name | jq '.[0].Config.Labels'
 - **Storage**: Distributed storage with GlusterFS or Ceph
 - **CI/CD**: GitLab or Jenkins for automated deployments
 
+## Service Health Monitoring
+
+### Docker Healthcheck Configuration
+
+All services include comprehensive health monitoring to ensure proper startup sequencing and operational status:
+
+| Service | Health Check Method | Interval | Timeout | Retries | Start Period |
+|---------|-------------------|----------|---------|---------|--------------|
+| **postgres** | `pg_isready -U admin -d default` | 30s | 10s | 3 | 30s |
+| **postgres-backup** | `curl -f http://localhost:8080/` | 5m | 3s | 3 | 30s |
+| **volume-backup** | `ps aux \| grep '[c]rond\|[s]upervisord'` | 60s | 10s | 3 | 30s |
+| **pgadmin** | `wget http://localhost:80/misc/ping` | 30s | 10s | 3 | 60s |
+| **grafana** | `curl -f http://localhost:3000/api/health` | 30s | 10s | 3 | 60s |
+| **prometheus** | `wget http://localhost:80/-/healthy` | 30s | 10s | 3 | 45s |
+| **cadvisor** | `wget http://localhost:80/healthz` | 30s | 10s | 3 | 30s |
+| **postgres-exporter** | `wget http://localhost:9187/metrics` | 30s | 10s | 3 | 30s |
+| **watchtower** | `ps aux \| grep '[w]atchtower'` | 60s | 10s | 3 | 30s |
+| **alertmanager** | `wget http://localhost:80/-/healthy` | 30s | 10s | 3 | 30s |
+| **blackbox-exporter** | `wget http://localhost:80/metrics` | 30s | 10s | 3 | 30s |
+
+### Health Status Monitoring
+
+```bash
+# Check all service health status
+docker compose ps --format 'table {{.Name}}\t{{.Status}}'
+
+# Get detailed health information for specific service
+docker inspect <service-name> --format='{{json .State.Health}}' | jq '.'
+
+# Monitor health checks in real-time
+watch -n 5 "docker compose ps"
+```
+
+### Health Check Benefits
+
+- **Foundation-First Dependencies**: Services start only after dependencies are truly healthy
+- **Automatic Recovery**: Docker restarts unhealthy containers based on restart policies
+- **Operational Visibility**: Clear status indication for troubleshooting
+- **Service Discovery**: Prometheus uses health status for target discovery
+
 ## Agent Context Summary
 
 **For AI Agents working on this project:**
