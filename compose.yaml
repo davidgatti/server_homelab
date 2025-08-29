@@ -121,6 +121,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.57
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:39  # 57 → 0x39
     healthcheck:
       test: ["CMD", "pgrep", "-f", "backup"]
       interval: 30s
@@ -152,6 +153,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.58
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:3a  # 58 → 0x3A
     depends_on:
       postgres:
         condition: service_healthy
@@ -220,6 +222,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.61
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:3d  # 61 → 0x3D
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/metrics"]
       interval: 30s
@@ -333,6 +336,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.62
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:3e  # 62 → 0x3E
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/healthz"]
       interval: 30s
@@ -359,6 +363,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.64
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:40  # 64 → 0x40
     depends_on:
       postgres:
         condition: service_healthy
@@ -389,6 +394,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.63
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:3f  # 63 → 0x3F
     command:
       - redis-server
       - --appendonly yes
@@ -424,6 +430,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.65
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:41  # 65 → 0x41
     depends_on:
       redis:
         condition: service_healthy
