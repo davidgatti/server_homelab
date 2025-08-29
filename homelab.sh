@@ -110,18 +110,60 @@ detect_network() {
     info "Using network: $DETECTED_NETWORK.0/24 on interface: $DETECTED_INTERFACE"
 }
 
+# MAC Address generation functions
+network_to_mac_id() {
+    local network="$1"
+    case "$network" in
+        "192.168.3") echo "03" ;;
+        "192.168.5") echo "05" ;;
+        "192.168.7") echo "07" ;;
+        *) echo "XX" ;;
+    esac
+}
+
+generate_mac_address() {
+    local ip_last_octet="$1"
+    local network_id=$(network_to_mac_id "$DETECTED_NETWORK")
+    local hex_octet=$(printf "%02x" "$ip_last_octet")
+    echo "02:42:48:4C:$network_id:$hex_octet"
+}
+
+show_mac_addresses() {
+    info "📍 MAC Addresses for $DETECTED_NETWORK.x network:"
+    local network_id=$(network_to_mac_id "$DETECTED_NETWORK")
+    local mac_prefix="02:42:48:4C:$network_id"
+    echo "   Pattern: $mac_prefix:XX"
+    echo "   postgres      ($DETECTED_NETWORK.53): $mac_prefix:35  (53 → 0x35)"
+    echo "   watchtower    ($DETECTED_NETWORK.54): $mac_prefix:36  (54 → 0x36)"
+    echo "   alertmanager  ($DETECTED_NETWORK.56): $mac_prefix:38  (56 → 0x38)"
+    echo "   prometheus    ($DETECTED_NETWORK.59): $mac_prefix:3b  (59 → 0x3B)"
+    echo "   grafana       ($DETECTED_NETWORK.60): $mac_prefix:3c  (60 → 0x3C)"
+    echo ""
+    info "🔧 Template for compose.yaml (matches IP structure):"
+    echo "   IP:  ipv4_address: \${NETWORK_PREFIX:-192.168.5}.53"
+    echo "   MAC: mac_address: \${MAC_NETWORK_PREFIX:-$mac_prefix}:35"
+    echo ""
+    info "💡 Environment Variable:"
+    echo "   MAC_NETWORK_PREFIX=$mac_prefix"
+}
+
 # Set environment variables for Docker Compose
 set_environment_variables() {
     info "Setting environment variables for $DETECTED_NETWORK.x network..."
     
-    # Export environment variables for docker compose
+    # Export network environment variables for docker compose
     export NETWORK_PREFIX="$DETECTED_NETWORK"
     export NETWORK_INTERFACE="$DETECTED_INTERFACE"
+    
+    # Export MAC network prefix (same structure as IP addresses)
+    local network_id=$(network_to_mac_id "$DETECTED_NETWORK")
+    export MAC_NETWORK_PREFIX="02:42:48:4C:$network_id"
     
     info "✅ Environment variables set:"
     info "   📍 NETWORK_PREFIX=$NETWORK_PREFIX"
     info "   🔌 NETWORK_INTERFACE=$NETWORK_INTERFACE"
-    info "   📋 Service IPs: $NETWORK_PREFIX.53-64"
+    info "   📋 Service IPs: $NETWORK_PREFIX.53-65"
+    info "   🔗 MAC Network Prefix: $MAC_NETWORK_PREFIX"
 }
 
 # Show status of all services
@@ -212,6 +254,7 @@ Commands:
     logs [service]  Show logs (optional: specific service)
     backup      Backup all data
     network     Show current network detection
+    mac         Show MAC addresses for current network
     help        Show this help message
 
 Network Auto-Detection:
@@ -225,6 +268,7 @@ Network Auto-Detection:
 Examples:
     $0 start           # Auto-detect network and start
     $0 network         # Show detected network info
+    $0 mac             # Show MAC addresses for current network
     $0 logs postgres   # Show postgres logs
     $0 status          # Show services and network info
 
@@ -275,6 +319,10 @@ main() {
             info "   Environment Variables:"
             info "     NETWORK_PREFIX=$DETECTED_NETWORK"
             info "     NETWORK_INTERFACE=$DETECTED_INTERFACE"
+            ;;
+        mac|macs)
+            detect_network
+            show_mac_addresses
             ;;
         help|--help|-h)
             help

@@ -14,6 +14,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.53
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:35  # 53 → 0x35
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U admin -d default"]
       interval: 30s
@@ -47,6 +48,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.54
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:36  # 54 → 0x36
     deploy:
       resources:
         limits:
@@ -166,6 +168,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.56
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:38  # 56 → 0x38
     command:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
       - '--storage.path=/alertmanager'
@@ -232,6 +235,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.60
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:3c  # 60 → 0x3C
     depends_on:
       prometheus:
         condition: service_healthy
@@ -273,6 +277,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.59
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:3b  # 59 → 0x3B
     depends_on:
       postgres-exporter:
         condition: service_healthy
