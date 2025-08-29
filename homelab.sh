@@ -133,18 +133,24 @@ show_mac_addresses() {
     local network_id=$(network_to_mac_id "$DETECTED_NETWORK")
     local mac_prefix="02:42:48:4C:$network_id"
     echo "   Pattern: $mac_prefix:XX"
-    echo "   postgres      ($DETECTED_NETWORK.53): $mac_prefix:35  (53 → 0x35)"
-    echo "   watchtower    ($DETECTED_NETWORK.54): $mac_prefix:36  (54 → 0x36)"
-    echo "   alertmanager  ($DETECTED_NETWORK.56): $mac_prefix:38  (56 → 0x38)"
-    echo "   prometheus    ($DETECTED_NETWORK.59): $mac_prefix:3b  (59 → 0x3B)"
-    echo "   grafana       ($DETECTED_NETWORK.60): $mac_prefix:3c  (60 → 0x3C)"
+    echo "   postgres      ($DETECTED_NETWORK.53): $mac_prefix:35  (53 → 0x35) [homelab-postgres]"
+    echo "   watchtower    ($DETECTED_NETWORK.54): $mac_prefix:36  (54 → 0x36) [homelab-watchtower]"
+    echo "   alertmanager  ($DETECTED_NETWORK.56): $mac_prefix:38  (56 → 0x38) [homelab-alertmanager]"
+    echo "   prometheus    ($DETECTED_NETWORK.59): $mac_prefix:3b  (59 → 0x3B) [homelab-prometheus]"
+    echo "   grafana       ($DETECTED_NETWORK.60): $mac_prefix:3c  (60 → 0x3C) [homelab-grafana]"
     echo ""
     info "🔧 Template for compose.yaml (matches IP structure):"
-    echo "   IP:  ipv4_address: \${NETWORK_PREFIX:-192.168.5}.53"
-    echo "   MAC: mac_address: \${MAC_NETWORK_PREFIX:-$mac_prefix}:35"
+    echo "   IP:       ipv4_address: \${NETWORK_PREFIX:-192.168.5}.53"
+    echo "   MAC:      mac_address: \${MAC_NETWORK_PREFIX:-$mac_prefix}:35"
+    echo "   Hostname: hostname: homelab-servicename"
     echo ""
     info "💡 Environment Variable:"
     echo "   MAC_NETWORK_PREFIX=$mac_prefix"
+    echo ""
+    info "🏠 UDM Router Benefits:"
+    echo "   • Clear service identification in network dashboard"
+    echo "   • Hostname-based device recognition"
+    echo "   • HomeLab services easily distinguishable from other devices"
 }
 
 # Set environment variables for Docker Compose
@@ -255,6 +261,7 @@ Commands:
     backup      Backup all data
     network     Show current network detection
     mac         Show MAC addresses for current network
+    hostnames   Show hostnames for UDM router identification
     help        Show this help message
 
 Network Auto-Detection:
@@ -269,6 +276,7 @@ Examples:
     $0 start           # Auto-detect network and start
     $0 network         # Show detected network info
     $0 mac             # Show MAC addresses for current network
+    $0 hostnames       # Show hostnames for UDM router
     $0 logs postgres   # Show postgres logs
     $0 status          # Show services and network info
 
@@ -323,6 +331,25 @@ main() {
         mac|macs)
             detect_network
             show_mac_addresses
+            ;;
+        hostnames|hosts)
+            detect_network
+            info "🏠 HomeLab Hostnames for UDM Router:"
+            echo "   Service hostnames that will appear in your UDM dashboard:"
+            echo ""
+            
+            # Get list of running containers and their configured hostnames using docker inspect only
+            docker ps --format "{{.Names}}" | grep -E "(postgres|watchtower|alertmanager|prometheus|grafana|redis|cadvisor|blackbox|pgadmin)" | sort | while read container_name; do
+                # Get hostname and IP from docker inspect (more reliable)
+                hostname=$(docker inspect "$container_name" --format '{{.Config.Hostname}}' 2>/dev/null || echo "unknown")
+                ip_addr=$(docker inspect "$container_name" --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' 2>/dev/null || echo "N/A")
+                
+                echo "   $container_name → $hostname ($ip_addr)"
+            done
+            
+            echo ""
+            info "💡 These hostnames will be visible in your UDM network dashboard"
+            info "   making it easy to identify HomeLab services among other devices."
             ;;
         help|--help|-h)
             help

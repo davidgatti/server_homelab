@@ -2,6 +2,7 @@ services:
   postgres:
     image: postgres:latest
     container_name: postgres
+    hostname: postgres
     restart: unless-stopped
     environment:
       - TZ=Europe/Rome
@@ -34,6 +35,7 @@ services:
   watchtower:
     image: containrrr/watchtower
     container_name: watchtower
+    hostname: watchtower
     restart: unless-stopped
     environment:
       - TZ=Europe/Rome
@@ -61,6 +63,7 @@ services:
   postgres-backup:
     image: prodrigestivill/postgres-backup-local
     container_name: postgres-backup
+    hostname: pg-backup
     restart: unless-stopped
     user: postgres:postgres
     environment:
@@ -93,6 +96,7 @@ services:
   volume-backup:
     image: offen/docker-volume-backup:latest
     container_name: volume-backup
+    hostname: vol-backup
     restart: unless-stopped
     environment:
       - TZ=Europe/Rome
@@ -126,6 +130,7 @@ services:
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: pgadmin
+    hostname: pgadmin
     restart: unless-stopped
     environment:
       - TZ=Europe/Rome
@@ -159,6 +164,7 @@ services:
   alertmanager:
     image: prom/alertmanager:latest
     container_name: alertmanager
+    hostname: alertmanager
     restart: unless-stopped
     environment:
       - TZ=Europe/Rome
@@ -193,6 +199,7 @@ services:
   blackbox-exporter:
     image: prom/blackbox-exporter:latest
     container_name: blackbox-exporter
+    hostname: blackbox
     restart: unless-stopped
     environment:
       - TZ=Europe/Rome
@@ -222,6 +229,7 @@ services:
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
+    hostname: grafana
     restart: unless-stopped
     user: "0"
     environment:
@@ -257,6 +265,7 @@ services:
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
+    hostname: prometheus
     restart: unless-stopped
     user: "0"
     environment:
@@ -299,6 +308,7 @@ services:
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
     container_name: cadvisor
+    hostname: cadvisor
     restart: unless-stopped
     privileged: true
     devices:
@@ -332,6 +342,7 @@ services:
   postgres-exporter:
     image: prometheuscommunity/postgres-exporter:latest
     container_name: postgres-exporter
+    hostname: pg-exporter
     restart: unless-stopped
     environment:
       - TZ=Europe/Rome
@@ -360,6 +371,7 @@ services:
   redis:
     image: redis:latest
     container_name: redis
+    hostname: redis
     restart: unless-stopped
     environment:
       - TZ=Europe/Rome
@@ -395,6 +407,7 @@ services:
   redis-exporter:
     image: oliver006/redis_exporter:latest
     container_name: redis-exporter
+    hostname: redis-exporter
     restart: unless-stopped
     environment:
       - TZ=Europe/Rome
