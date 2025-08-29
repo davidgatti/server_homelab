@@ -1,5 +1,5 @@
 #!/bin/bash
-# homelab-resource-monitor.sh - HomeLab Resource Usage Monitor
+# homelab-resource-monitor.sh - HomeLab Resource Usage Monitor with Complete Service Tracking
 
 # Colors for output
 RED='\033[0;31m'
@@ -16,6 +16,26 @@ bytes_to_human() {
     else
         echo "$bytes"
     fi
+}
+
+# Function to get expected services from compose.yaml
+get_expected_services() {
+    if [ ! -f "compose.yaml" ]; then
+        echo "ERROR: compose.yaml not found!" >&2
+        return 1
+    fi
+    
+    # Extract only service names from compose.yaml (under 'services:' section)
+    # Look for lines that start with two spaces and a service name, but only under services section
+    awk '
+    /^services:/ { in_services=1; next }
+    /^[a-zA-Z]/ && in_services { in_services=0 }
+    in_services && /^  [a-zA-Z0-9_-]+:/ { 
+        gsub(/^  /, ""); 
+        gsub(/:.*/, ""); 
+        print 
+    }
+    ' compose.yaml | sort
 }
 
 echo "🏠 HomeLab Resource Monitor - $(date)"
@@ -36,72 +56,108 @@ echo "Available Memory: $AVAIL_MEM"
 echo "CPU Cores: $CPU_CORES"
 echo "Load Average:$LOAD_AVG"
 
-# Container Resource Usage with Health Status
-echo -e "\n📊 Container Resource Usage & Health:"
-echo "-------------------------------------"
+# Get expected services from compose.yaml
+EXPECTED_SERVICES=$(get_expected_services)
+if [ $? -ne 0 ]; then
+    echo "Failed to read expected services from compose.yaml"
+    exit 1
+fi
+
+# Count expected vs running services
+EXPECTED_COUNT=$(echo "$EXPECTED_SERVICES" | wc -l)
+RUNNING_COUNT=$(docker ps --format "{{.Names}}" | wc -l)
+
+echo -e "\n📈 Service Overview:"
+echo "-------------------"
+echo "Expected Services: $EXPECTED_COUNT"
+echo "Running Services: $RUNNING_COUNT"
+if [ "$RUNNING_COUNT" -eq "$EXPECTED_COUNT" ]; then
+    echo -e "Status: ${GREEN}🟢 All services running${NC}"
+else
+    echo -e "Status: ${RED}🔴 $(($EXPECTED_COUNT - $RUNNING_COUNT)) service(s) missing${NC}"
+fi
+
+# Container Resource Usage with Health Status - NOW INCLUDES ALL EXPECTED SERVICES
+echo -e "\n📊 Complete Service Status & Resource Usage:"
+echo "--------------------------------------------"
+
+# Create arrays for running containers and all expected services
+RUNNING_CONTAINERS=$(docker ps --format "{{.Names}}" | sort)
+
 {
-    echo "Container|Container ID|Hostname|IP Address|MAC Address|CPU %|CPU Limit|Mem Used|Mem Limit|Mem %|Net In|Net Out|Block Read|Block Write|Docker Health|Resource Status"
-    docker stats --no-stream --format "{{.Container}}\t{{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.MemPerc}}\t{{.NetIO}}\t{{.BlockIO}}" | while IFS=$'\t' read -r container_id name cpu_perc mem_usage mem_perc net_io block_io; do
-        # Truncate container ID to first 12 characters
-        short_id=$(echo "$container_id" | cut -c1-12)
-        
-        # Get hostname from Docker inspect
-        hostname=$(docker inspect "$container_id" 2>/dev/null | jq -r '.[0].Config.Hostname // "N/A"' 2>/dev/null || echo "N/A")
-        
-        # Get IP and MAC address from Docker inspect
-        ip_address=$(docker inspect "$container_id" 2>/dev/null | jq -r '.[0].NetworkSettings.Networks.homelab.IPAddress // "N/A"' 2>/dev/null || echo "N/A")
-        mac_address=$(docker inspect "$container_id" 2>/dev/null | jq -r '.[0].NetworkSettings.Networks.homelab.MacAddress // "N/A"' 2>/dev/null || echo "N/A")
-        
-        # Get Docker health check status
-        docker_health=$(docker inspect "$container_id" 2>/dev/null | jq -r '.[0].State.Health.Status // "none"' 2>/dev/null || echo "none")
-        case "$docker_health" in
-            "healthy") docker_health_display="🟢 Healthy" ;;
-            "unhealthy") docker_health_display="🔴 Unhealthy" ;;
-            "starting") docker_health_display="🟡 Starting" ;;
-            "none") docker_health_display="⚪ No Check" ;;
-            *) docker_health_display="❓ Unknown" ;;
-        esac
-        
-        # If homelab network not found, try first available network
-        if [ "$ip_address" = "N/A" ] || [ "$ip_address" = "null" ]; then
-            ip_address=$(docker inspect "$container_id" 2>/dev/null | jq -r '.[0].NetworkSettings.Networks | to_entries | .[0].value.IPAddress // "N/A"' 2>/dev/null || echo "N/A")
+    echo "Service|Container ID|Status|Hostname|IP Address|MAC Address|CPU %|CPU Limit|Mem Used|Mem Limit|Mem %|Net In|Net Out|Block Read|Block Write|Docker Health|Resource Status"
+    
+    # Process all expected services
+    echo "$EXPECTED_SERVICES" | while read -r service; do
+        # Check if this service is running
+        if echo "$RUNNING_CONTAINERS" | grep -q "^$service$"; then
+            # Service is running - get its stats
+            docker stats --no-stream --format "{{.Container}}\t{{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.MemPerc}}\t{{.NetIO}}\t{{.BlockIO}}" "$service" 2>/dev/null | while IFS=$'\t' read -r container_id name cpu_perc mem_usage mem_perc net_io block_io; do
+                # Truncate container ID to first 12 characters
+                short_id=$(echo "$container_id" | cut -c1-12)
+                
+                # Get hostname from Docker inspect
+                hostname=$(docker inspect "$container_id" 2>/dev/null | jq -r '.[0].Config.Hostname // "N/A"' 2>/dev/null || echo "N/A")
+                
+                # Get IP and MAC address from Docker inspect
+                ip_address=$(docker inspect "$container_id" 2>/dev/null | jq -r '.[0].NetworkSettings.Networks.homelab.IPAddress // "N/A"' 2>/dev/null || echo "N/A")
+                mac_address=$(docker inspect "$container_id" 2>/dev/null | jq -r '.[0].NetworkSettings.Networks.homelab.MacAddress // "N/A"' 2>/dev/null || echo "N/A")
+                
+                # Get Docker health check status
+                docker_health=$(docker inspect "$container_id" 2>/dev/null | jq -r '.[0].State.Health.Status // "none"' 2>/dev/null || echo "none")
+                case "$docker_health" in
+                    "healthy") docker_health_display="🟢 Healthy" ;;
+                    "unhealthy") docker_health_display="🔴 Unhealthy" ;;
+                    "starting") docker_health_display="🟡 Starting" ;;
+                    "none") docker_health_display="⚪ No Check" ;;
+                    *) docker_health_display="❓ Unknown" ;;
+                esac
+                
+                # If homelab network not found, try first available network
+                if [ "$ip_address" = "N/A" ] || [ "$ip_address" = "null" ]; then
+                    ip_address=$(docker inspect "$container_id" 2>/dev/null | jq -r '.[0].NetworkSettings.Networks | to_entries | .[0].value.IPAddress // "N/A"' 2>/dev/null || echo "N/A")
+                fi
+                if [ "$mac_address" = "N/A" ] || [ "$mac_address" = "null" ]; then
+                    mac_address=$(docker inspect "$container_id" 2>/dev/null | jq -r '.[0].NetworkSettings.Networks | to_entries | .[0].value.MacAddress // "N/A"' 2>/dev/null || echo "N/A")
+                fi
+                
+                # Split memory usage (used / limit)
+                mem_used=$(echo "$mem_usage" | cut -d'/' -f1 | xargs)
+                mem_limit=$(echo "$mem_usage" | cut -d'/' -f2 | xargs)
+                
+                # Get CPU limit from compose.yaml
+                cpu_limit=$(docker compose config 2>/dev/null | grep -A 20 "^  $name:" | grep -A 10 "limits:" | grep "cpus:" | head -1 | awk '{print $2}' | tr -d "'" | tr -d '"' || echo "No limit")
+                [ "$cpu_limit" = "" ] && cpu_limit="No limit"
+                
+                # Split network I/O (input / output)
+                net_in=$(echo "$net_io" | cut -d'/' -f1 | xargs)
+                net_out=$(echo "$net_io" | cut -d'/' -f2 | xargs)
+                
+                # Split block I/O (read / write)
+                block_read=$(echo "$block_io" | cut -d'/' -f1 | xargs)
+                block_write=$(echo "$block_io" | cut -d'/' -f2 | xargs)
+                
+                # Calculate health status
+                mem_value=$(echo "$mem_perc" | sed 's/%//')
+                cpu_value=$(echo "$cpu_perc" | sed 's/%//')
+                
+                # Determine health status
+                health_status="🟢 OK"
+                if (( $(echo "$mem_value > 85" | bc -l 2>/dev/null || echo "0") )); then
+                    health_status="🔴 CRITICAL"
+                elif (( $(echo "$mem_value > 70" | bc -l 2>/dev/null || echo "0") )); then
+                    health_status="🟡 WATCH"
+                elif (( $(echo "$cpu_value > 80" | bc -l 2>/dev/null || echo "0") )); then
+                    health_status="🟡 HIGH CPU"
+                fi
+                
+                echo "$name|$short_id|🟢 RUNNING|$hostname|$ip_address|$mac_address|$cpu_perc|$cpu_limit|$mem_used|$mem_limit|$mem_perc|$net_in|$net_out|$block_read|$block_write|$docker_health_display|$health_status"
+            done
+        else
+            # Service is missing
+            echo "$service|N/A|🔴 MISSING|N/A|N/A|N/A|N/A|N/A|N/A|N/A|N/A|N/A|N/A|N/A|N/A|🔴 NOT RUNNING"
         fi
-        if [ "$mac_address" = "N/A" ] || [ "$mac_address" = "null" ]; then
-            mac_address=$(docker inspect "$container_id" 2>/dev/null | jq -r '.[0].NetworkSettings.Networks | to_entries | .[0].value.MacAddress // "N/A"' 2>/dev/null || echo "N/A")
-        fi
-        
-        # Split memory usage (used / limit)
-        mem_used=$(echo "$mem_usage" | cut -d'/' -f1 | xargs)
-        mem_limit=$(echo "$mem_usage" | cut -d'/' -f2 | xargs)
-        
-        # Get CPU limit from compose.yaml
-        cpu_limit=$(docker compose config 2>/dev/null | grep -A 20 "^  $name:" | grep -A 10 "limits:" | grep "cpus:" | head -1 | awk '{print $2}' | tr -d "'" | tr -d '"' || echo "No limit")
-        [ "$cpu_limit" = "" ] && cpu_limit="No limit"
-        
-        # Split network I/O (input / output)
-        net_in=$(echo "$net_io" | cut -d'/' -f1 | xargs)
-        net_out=$(echo "$net_io" | cut -d'/' -f2 | xargs)
-        
-        # Split block I/O (read / write)
-        block_read=$(echo "$block_io" | cut -d'/' -f1 | xargs)
-        block_write=$(echo "$block_io" | cut -d'/' -f2 | xargs)
-        
-        # Calculate health status
-        mem_value=$(echo "$mem_perc" | sed 's/%//')
-        cpu_value=$(echo "$cpu_perc" | sed 's/%//')
-        
-        # Determine health status
-        health_status="🟢 OK"
-        if (( $(echo "$mem_value > 85" | bc -l 2>/dev/null || echo "0") )); then
-            health_status="🔴 CRITICAL"
-        elif (( $(echo "$mem_value > 70" | bc -l 2>/dev/null || echo "0") )); then
-            health_status="🟡 WATCH"
-        elif (( $(echo "$cpu_value > 80" | bc -l 2>/dev/null || echo "0") )); then
-            health_status="🟡 HIGH CPU"
-        fi
-        
-        echo "$name|$short_id|$hostname|$ip_address|$mac_address|$cpu_perc|$cpu_limit|$mem_used|$mem_limit|$mem_perc|$net_in|$net_out|$block_read|$block_write|$docker_health_display|$health_status"
-    done | sort
+    done
 } | column -t -s '|'
 
 # Resource Warnings
@@ -127,7 +183,36 @@ else
     echo -e "🟢 GOOD CPU LOAD: $LOAD_1MIN (threshold: $LOAD_THRESHOLD)"
 fi
 
+# Missing services analysis
+echo -e "\n🔍 Missing Services Analysis:"
+echo "-----------------------------"
+MISSING_SERVICES=$(echo "$EXPECTED_SERVICES" | while read -r service; do
+    if ! docker ps --format "{{.Names}}" | grep -q "^$service$"; then
+        echo "$service"
+    fi
+done)
+
+if [ -z "$MISSING_SERVICES" ]; then
+    echo -e "🟢 All expected services are running!"
+else
+    echo -e "🔴 Missing services detected:"
+    echo "$MISSING_SERVICES" | while read -r missing; do
+        echo "   • $missing"
+    done
+    echo ""
+    echo -e "💡 To start missing services: ${BLUE}./homelab.sh start${NC}"
+    echo -e "💡 To check specific service: ${BLUE}docker logs $missing${NC}"
+fi
+
+echo -e "\n📋 Service Summary:"
+echo "-------------------"
+echo "Expected: $EXPECTED_COUNT services"
+echo "Running:  $RUNNING_COUNT services"
+echo "Missing:  $(echo "$MISSING_SERVICES" | grep -c . 2>/dev/null || echo "0") services"
+
 echo -e "\n💡 Tips:"
 echo "--------"
 echo "• Use 'docker logs <container>' to check specific service logs"
 echo "• Use './homelab.sh status' for overall service health"
+echo "• Use './homelab.sh restart' to restart all services"
+echo "• Use './homelab.sh reset --force' for complete reset (DANGER: wipes all data)"
