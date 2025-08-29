@@ -40,7 +40,7 @@ echo "Load Average:$LOAD_AVG"
 echo -e "\n📊 Container Resource Usage & Health:"
 echo "-------------------------------------"
 {
-    echo "Container|Container ID|Hostname|IP Address|MAC Address|CPU %|CPU Limit|Mem Used|Mem Limit|Mem %|Net In|Net Out|Block Read|Block Write|Health Status"
+    echo "Container|Container ID|Hostname|IP Address|MAC Address|CPU %|CPU Limit|Mem Used|Mem Limit|Mem %|Net In|Net Out|Block Read|Block Write|Docker Health|Resource Status"
     docker stats --no-stream --format "{{.Container}}\t{{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.MemPerc}}\t{{.NetIO}}\t{{.BlockIO}}" | while IFS=$'\t' read -r container_id name cpu_perc mem_usage mem_perc net_io block_io; do
         # Truncate container ID to first 12 characters
         short_id=$(echo "$container_id" | cut -c1-12)
@@ -51,6 +51,16 @@ echo "-------------------------------------"
         # Get IP and MAC address from Docker inspect
         ip_address=$(docker inspect "$container_id" 2>/dev/null | jq -r '.[0].NetworkSettings.Networks.homelab.IPAddress // "N/A"' 2>/dev/null || echo "N/A")
         mac_address=$(docker inspect "$container_id" 2>/dev/null | jq -r '.[0].NetworkSettings.Networks.homelab.MacAddress // "N/A"' 2>/dev/null || echo "N/A")
+        
+        # Get Docker health check status
+        docker_health=$(docker inspect "$container_id" 2>/dev/null | jq -r '.[0].State.Health.Status // "none"' 2>/dev/null || echo "none")
+        case "$docker_health" in
+            "healthy") docker_health_display="🟢 Healthy" ;;
+            "unhealthy") docker_health_display="🔴 Unhealthy" ;;
+            "starting") docker_health_display="🟡 Starting" ;;
+            "none") docker_health_display="⚪ No Check" ;;
+            *) docker_health_display="❓ Unknown" ;;
+        esac
         
         # If homelab network not found, try first available network
         if [ "$ip_address" = "N/A" ] || [ "$ip_address" = "null" ]; then
@@ -90,7 +100,7 @@ echo "-------------------------------------"
             health_status="🟡 HIGH CPU"
         fi
         
-        echo "$name|$short_id|$hostname|$ip_address|$mac_address|$cpu_perc|$cpu_limit|$mem_used|$mem_limit|$mem_perc|$net_in|$net_out|$block_read|$block_write|$health_status"
+        echo "$name|$short_id|$hostname|$ip_address|$mac_address|$cpu_perc|$cpu_limit|$mem_used|$mem_limit|$mem_perc|$net_in|$net_out|$block_read|$block_write|$docker_health_display|$health_status"
     done | sort
 } | column -t -s '|'
 
