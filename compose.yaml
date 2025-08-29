@@ -251,6 +251,8 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
       - ./configs/grafana/grafana.ini:/etc/grafana/grafana.ini:ro
+      - ./configs/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./configs/grafana/dashboards:/etc/grafana/dashboards:ro
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.60
