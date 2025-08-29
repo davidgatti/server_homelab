@@ -40,10 +40,13 @@ echo "Load Average:$LOAD_AVG"
 echo -e "\n📊 Container Resource Usage & Health:"
 echo "-------------------------------------"
 {
-    echo "Container|Container ID|IP Address|MAC Address|CPU %|CPU Limit|Mem Used|Mem Limit|Mem %|Net In|Net Out|Block Read|Block Write|Health Status"
+    echo "Container|Container ID|Hostname|IP Address|MAC Address|CPU %|CPU Limit|Mem Used|Mem Limit|Mem %|Net In|Net Out|Block Read|Block Write|Health Status"
     docker stats --no-stream --format "{{.Container}}\t{{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.MemPerc}}\t{{.NetIO}}\t{{.BlockIO}}" | while IFS=$'\t' read -r container_id name cpu_perc mem_usage mem_perc net_io block_io; do
         # Truncate container ID to first 12 characters
         short_id=$(echo "$container_id" | cut -c1-12)
+        
+        # Get hostname from Docker inspect
+        hostname=$(docker inspect "$container_id" 2>/dev/null | jq -r '.[0].Config.Hostname // "N/A"' 2>/dev/null || echo "N/A")
         
         # Get IP and MAC address from Docker inspect
         ip_address=$(docker inspect "$container_id" 2>/dev/null | jq -r '.[0].NetworkSettings.Networks.homelab.IPAddress // "N/A"' 2>/dev/null || echo "N/A")
@@ -87,7 +90,7 @@ echo "-------------------------------------"
             health_status="🟡 HIGH CPU"
         fi
         
-        echo "$name|$short_id|$ip_address|$mac_address|$cpu_perc|$cpu_limit|$mem_used|$mem_limit|$mem_perc|$net_in|$net_out|$block_read|$block_write|$health_status"
+        echo "$name|$short_id|$hostname|$ip_address|$mac_address|$cpu_perc|$cpu_limit|$mem_used|$mem_limit|$mem_perc|$net_in|$net_out|$block_read|$block_write|$health_status"
     done | sort
 } | column -t -s '|'
 
