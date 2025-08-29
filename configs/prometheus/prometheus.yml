@@ -87,6 +87,8 @@ scrape_configs:
         - http://192.168.5.56  # AlertManager
         - http://192.168.5.58  # pgAdmin
         - http://192.168.5.62  # cAdvisor
+        - http://192.168.5.66  # Loki
+        - http://192.168.5.67  # Promtail
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
@@ -94,3 +96,14 @@ scrape_configs:
         target_label: instance
       - target_label: __address__
         replacement: 192.168.5.61:80
+
+  # Log Management Stack
+  - job_name: 'loki'
+    static_configs:
+      - targets: ['192.168.5.66:3100']
+    metrics_path: '/metrics'
+
+  - job_name: 'promtail'
+    static_configs:
+      - targets: ['192.168.5.67:9080']
+    metrics_path: '/metrics'

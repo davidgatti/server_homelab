@@ -15,7 +15,7 @@ configs/grafana/dashboards/
 **Main HomeLab Services Monitoring Dashboard**
 - **Description**: Comprehensive monitoring of all Docker services
 - **Panels**: CPU, Memory, Network, Disk I/O metrics + Service Health
-- **Services**: All 13 HomeLab services tracked
+- **Services**: All 15 HomeLab services tracked (including Loki & Promtail)
 - **Features**: Time-series graphs, clean UI (no legends), color-coded thresholds
 
 ## Usage

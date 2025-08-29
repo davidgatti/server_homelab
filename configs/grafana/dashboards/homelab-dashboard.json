@@ -11,7 +11,7 @@
         "type": "timeseries",
         "targets": [
           {
-            "expr": "rate(container_cpu_usage_seconds_total{name=~\"postgres|grafana|prometheus|redis|cadvisor|alertmanager|pgadmin|blackbox-exporter|postgres-exporter|redis-exporter|watchtower|volume-backup|postgres-backup\"}[5m]) * 100",
+            "expr": "rate(container_cpu_usage_seconds_total{name=~\"postgres|grafana|prometheus|redis|cadvisor|alertmanager|pgadmin|blackbox-exporter|postgres-exporter|redis-exporter|watchtower|volume-backup|postgres-backup|loki|promtail\"}[5m]) * 100",
             "legendFormat": "{{name}}"
           }
         ],
@@ -56,7 +56,7 @@
         "type": "timeseries",
         "targets": [
           {
-            "expr": "container_memory_usage_bytes{name=~\"postgres|grafana|prometheus|redis|cadvisor|alertmanager|pgadmin|blackbox-exporter|postgres-exporter|redis-exporter|watchtower|volume-backup|postgres-backup\"} / 1024 / 1024",
+            "expr": "container_memory_usage_bytes{name=~\"postgres|grafana|prometheus|redis|cadvisor|alertmanager|pgadmin|blackbox-exporter|postgres-exporter|redis-exporter|watchtower|volume-backup|postgres-backup|loki|promtail\"} / 1024 / 1024",
             "legendFormat": "{{name}}"
           }
         ],
@@ -100,7 +100,7 @@
         "type": "timeseries",
         "targets": [
           {
-            "expr": "rate(container_network_receive_bytes_total{name=~\"postgres|grafana|prometheus|redis|cadvisor|alertmanager|pgadmin|blackbox-exporter|postgres-exporter|redis-exporter|watchtower|volume-backup|postgres-backup\"}[5m]) / 1024 / 1024",
+            "expr": "rate(container_network_receive_bytes_total{name=~\"postgres|grafana|prometheus|redis|cadvisor|alertmanager|pgadmin|blackbox-exporter|postgres-exporter|redis-exporter|watchtower|volume-backup|postgres-backup|loki|promtail\"}[5m]) / 1024 / 1024",
             "legendFormat": "{{name}} - RX"
           }
         ],
@@ -136,7 +136,7 @@
         "type": "timeseries",
         "targets": [
           {
-            "expr": "rate(container_network_transmit_bytes_total{name=~\"postgres|grafana|prometheus|redis|cadvisor|alertmanager|pgadmin|blackbox-exporter|postgres-exporter|redis-exporter|watchtower|volume-backup|postgres-backup\"}[5m]) / 1024 / 1024",
+            "expr": "rate(container_network_transmit_bytes_total{name=~\"postgres|grafana|prometheus|redis|cadvisor|alertmanager|pgadmin|blackbox-exporter|postgres-exporter|redis-exporter|watchtower|volume-backup|postgres-backup|loki|promtail\"}[5m]) / 1024 / 1024",
             "legendFormat": "{{name}} - TX"
           }
         ],
@@ -172,7 +172,7 @@
         "type": "timeseries",
         "targets": [
           {
-            "expr": "rate(container_fs_reads_bytes_total{name=~\"postgres|grafana|prometheus|redis|cadvisor|alertmanager|pgadmin|blackbox-exporter|postgres-exporter|redis-exporter|watchtower|volume-backup|postgres-backup\"}[5m]) / 1024 / 1024",
+            "expr": "rate(container_fs_reads_bytes_total{name=~\"postgres|grafana|prometheus|redis|cadvisor|alertmanager|pgadmin|blackbox-exporter|postgres-exporter|redis-exporter|watchtower|volume-backup|postgres-backup|loki|promtail\"}[5m]) / 1024 / 1024",
             "legendFormat": "{{name}} - Read"
           }
         ],
@@ -208,7 +208,7 @@
         "type": "timeseries",
         "targets": [
           {
-            "expr": "rate(container_fs_writes_bytes_total{name=~\"postgres|grafana|prometheus|redis|cadvisor|alertmanager|pgadmin|blackbox-exporter|postgres-exporter|redis-exporter|watchtower|volume-backup|postgres-backup\"}[5m]) / 1024 / 1024",
+            "expr": "rate(container_fs_writes_bytes_total{name=~\"postgres|grafana|prometheus|redis|cadvisor|alertmanager|pgadmin|blackbox-exporter|postgres-exporter|redis-exporter|watchtower|volume-backup|postgres-backup|loki|promtail\"}[5m]) / 1024 / 1024",
             "legendFormat": "{{name}} - Write"
           }
         ],
