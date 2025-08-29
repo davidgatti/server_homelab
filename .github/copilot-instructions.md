@@ -4,17 +4,36 @@
 
 ### Core Beliefs
 
-- **Incremental progress over big bangs** - Small changes that compile and pass tests
-- **Learning from existing code** - Study and plan before implementing
-- **Pragmatic over dogmatic** - Adapt to project reality
-- **Clear intent over clever code** - Be boring and obvious
+* **Incremental progress over big bangs** — Small changes that compile and pass tests
+* **Learning from existing code** — Study and plan before implementing
+* **Pragmatic over dogmatic** — Adapt to project reality
+* **Clear intent over clever code** — Be boring and obvious
+* **No magic, just clean habits** — Think in reusable systems
 
 ### Simplicity Means
 
-- Single responsibility per function/class
-- Avoid premature abstractions
-- No clever tricks - choose the boring solution
-- If you need to explain it, it's too complex
+* Single responsibility per function/class
+* Avoid premature abstractions
+* No clever tricks — choose the boring solution
+* If you need to explain it, it's too complex
+
+## Mindset
+
+### Thinking Patterns
+
+* "How will this fail?" always comes before "How does this work?"
+* Complexity is avoided with **opinionated consistency**, not more tools
+* Each script/config/module should do one thing and look like it
+* Ambiguity is the enemy — structure is the cure
+
+### Daily Habits
+
+* Systems are built from clean, modular parts
+* All tasks should be traceable, testable, restartable
+* Logs are written for future humans — make them human
+* Prefer clarity, precision, and structure
+
+---
 
 ## Process
 
@@ -22,154 +41,195 @@
 
 **ALWAYS check `.knowledge/` folder before starting major work:**
 
-- **Implementation guidance** → `.knowledge/instructions/`
-- **API/tool references** → `.knowledge/documentation/`
-- **Project history** → `.knowledge/logbook/`
+* `.knowledge/instructions/` — Implementation guidance
+* `.knowledge/documentation/` — API/tool references
+* `.knowledge/logbook/` — Project history
 
 ### 1. Planning & Staging
 
-**For major changes (asset reorganization, new integrations, architectural updates):**
+For major changes:
 
-1. **Create logbook entry FIRST**:
+1. **Create logbook entry**
+
    ```bash
    cd .knowledge/logbook
    ./init.sh 'brief-description-of-change'
    ```
 
-2. **Then create implementation plan** in `IMPLEMENTATION_PLAN.md`:
+2. **Create `IMPLEMENTATION_PLAN.md`** with staged goals:
 
-```markdown
-## Stage N: [Name]
-**Goal**: [Specific deliverable]
-**Success Criteria**: [Testable outcomes]
-**Tests**: [Specific test cases]
-**Status**: [Not Started|In Progress|Complete]
-```
+   ```markdown
+   ## Stage N: [Name]
+   **Goal**: [Specific deliverable]  
+   **Success Criteria**: [Testable outcomes]  
+   **Tests**: [Specific test cases]  
+   **Status**: [Not Started|In Progress|Complete]
+   ```
 
-- Update status as you progress
-- Remove file when all stages are done
-- **Document completion in logbook entry**
+3. **Update statuses**, remove plan after all stages complete, and document in logbook.
 
 ### 2. Implementation Flow
 
-1. **Understand** - Study existing patterns in codebase
-2. **Test** - Write test first (red)
-3. **Implement** - Minimal code to pass (green)
-4. **Refactor** - Clean up with tests passing
-5. **Commit** - With clear message linking to plan
+1. Understand existing code
+2. Write failing test (red)
+3. Write minimum code to pass (green)
+4. Refactor with tests passing
+5. Commit with clear messages linked to plan
 
 ### 3. When Stuck (After 3 Attempts)
 
-**CRITICAL**: Maximum 3 attempts per issue, then STOP.
+1. Document what failed (errors, assumptions)
+2. Research 2–3 alternatives
+3. Question fundamentals (abstraction, approach, complexity)
+4. Try a different angle (library, architecture, simplify)
 
-1. **Document what failed**:
-   - What you tried
-   - Specific error messages
-   - Why you think it failed
-
-2. **Research alternatives**:
-   - Find 2-3 similar implementations
-   - Note different approaches used
-
-3. **Question fundamentals**:
-   - Is this the right abstraction level?
-   - Can this be split into smaller problems?
-   - Is there a simpler approach entirely?
-
-4. **Try different angle**:
-   - Different library/framework feature?
-   - Different architectural pattern?
-   - Remove abstraction instead of adding?
+---
 
 ## Technical Standards
 
-### Architecture Principles
+### Architecture
 
-- **Composition over inheritance** - Use dependency injection
-- **Interfaces over singletons** - Enable testing and flexibility
-- **Explicit over implicit** - Clear data flow and dependencies
-- **Test-driven when possible** - Never disable tests, fix them
+* Composition over inheritance
+* Interfaces over singletons
+* Explicit over implicit
+* Test-driven where possible
 
 ### Code Quality
 
-- **Every commit must**:
-  - Compile successfully
-  - Pass all existing tests
-  - Include tests for new functionality
-  - Follow project formatting/linting
+* Each commit must:
 
-- **Before committing**:
-  - Run formatters/linters
-  - Self-review changes
-  - Ensure commit message explains "why"
+  * Compile
+  * Pass all tests
+  * Include new tests
+  * Follow formatting/linting
+
+* Before committing:
+
+  * Run linter/formatter
+  * Self-review
+  * Clear commit message explaining “why”
 
 ### Error Handling
 
-- Fail fast with descriptive messages
-- Include context for debugging
-- Handle errors at appropriate level
-- Never silently swallow exceptions
+* Fail fast, with context
+* Never swallow exceptions silently
+* Handle at correct layer for visibility
+
+---
 
 ## Decision Framework
 
-When multiple valid approaches exist, choose based on:
+When choices exist, prefer:
 
-1. **Testability** - Can I easily test this?
-2. **Readability** - Will someone understand this in 6 months?
-3. **Consistency** - Does this match project patterns?
-4. **Simplicity** - Is this the simplest solution that works?
-5. **Reversibility** - How hard to change later?
+1. **Testability**
+2. **Readability**
+3. **Consistency**
+4. **Simplicity**
+5. **Reversibility**
 
-## Project Integration
+---
+
+## Integration Practices
 
 ### Learning the Codebase
 
-- Find 3 similar features/components
-- Identify common patterns and conventions
-- Use same libraries/utilities when possible
-- Follow existing test patterns
+* Find 3 similar implementations
+* Match libraries, structure, test approach
 
 ### Tooling
 
-- Use project's existing build system
-- Use project's test framework
-- Use project's formatter/linter settings
-- Don't introduce new tools without strong justification
+* Use project build/test/lint tools
+* Don't add new tools without strong justification
+
+---
 
 ## Quality Gates
 
 ### Definition of Done
 
-- [ ] Tests written and passing
-- [ ] Code follows project conventions
-- [ ] No linter/formatter warnings
-- [ ] Commit messages are clear
-- [ ] Implementation matches plan
-- [ ] No TODOs without issue numbers
+* [ ] Tests written and passing
+* [ ] Linter/formatter clean
+* [ ] Project conventions followed
+* [ ] Clear commit messages
+* [ ] Matches the plan
+* [ ] No TODOs without issue links
 
 ### Test Guidelines
 
-- Test behavior, not implementation
-- One assertion per test when possible
-- Clear test names describing scenario
-- Use existing test utilities/helpers
-- Tests should be deterministic
+* Test behavior, not implementation
+* Prefer one assertion per test
+* Use meaningful test names
+* Tests must be deterministic
 
-## Important Reminders
+---
+
+## Documentation & Communication
+
+* Document like it’s a clean install
+* Number steps, use ASCII (`-->`, `^^^`)
+* Assume the reader knows nothing
+* Enforce structure and formatting discipline
+
+---
+
+## Non-Code Technical Habits
+
+* Clean up before automating
+* Simulate or dry-run before real runs
+* Run things locally to understand them
+* Avoid hidden defaults — be explicit
+
+---
+
+## Personal Conduct
+
+### Work Style
+
+* Build fresh, don’t fix spaghetti
+* Comments explain “why,” not “what”
+* Tools should match problem-solving flow
+* Structure folders and names to scale
+
+### Communication
+
+* Be direct, not rude
+* Say what matters, then stop
+* Ask clear, critical questions
+* Prioritize clarity over niceness when needed
+
+---
+
+## Aesthetic Choices
+
+* Pixel-perfect terminals
+* Monospace, dark red themes
+* Minimal, modern, logic-driven interfaces
+
+---
+
+## Final Reminder
 
 **NEVER**:
 
-- Use `--no-verify` to bypass commit hooks
-- Disable tests instead of fixing them
-- Commit code that doesn't compile
-- Make assumptions - verify with existing code
-- Skip the logbook for major changes
+* Use `--no-verify`
+* Disable tests
+* Commit broken code
+* Skip `.knowledge/` or logbook
 
 **ALWAYS**:
 
-- Check `.knowledge/` folder before starting major work
-- Create logbook entries for infrastructure/architectural changes
-- Commit working code incrementally
-- Update plan documentation as you go
-- Learn from existing implementations
-- Stop after 3 failed attempts and reassess
+* Reference `.knowledge/` before starting
+* Create plans for infra/arch work
+* Write clean, traceable code
+* Document failures and rethink after 3 tries
+
+---
+
+## Summary
+
+* Build reusable systems
+* Enforce structure daily
+* Document once — clearly
+* Eliminate magic, enforce habits
+
+This is how we do things — properly.
