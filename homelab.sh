@@ -245,6 +245,96 @@ backup() {
     log "Backup completed: $backup_dir"
 }
 
+# Complete reset - stops services, removes volumes, networks, and optionally backups
+reset() {
+    local force="$1"
+    
+    if [ "$force" != "--force" ]; then
+        error "⚠️  DANGER: This will completely wipe your HomeLab!"
+        error "   • All containers will be stopped and removed"
+        error "   • All Docker volumes will be deleted (postgres, grafana, etc.)"
+        error "   • All Docker networks will be removed"  
+        error "   • All backup files will be deleted from /opt/homelab/backups/"
+        error "   • You will lose ALL data permanently!"
+        echo ""
+        warn "If you're sure you want to proceed, run:"
+        warn "   $0 reset --force"
+        echo ""
+        info "💡 Consider running a backup first: $0 backup"
+        return 1
+    fi
+    
+    log "🔥 STARTING COMPLETE HOMELAB RESET..."
+    echo ""
+    
+    # Step 1: Stop and remove containers
+    log "🛑 Step 1/6: Stopping and removing all containers..."
+    if docker compose ps -q 2>/dev/null | grep -q .; then
+        docker compose down -v --remove-orphans
+    else
+        info "No running compose services found"
+    fi
+    
+    # Remove any orphaned containers from this project
+    docker ps -a --filter "label=com.docker.compose.project=$PROJECT_NAME" -q | xargs -r docker rm -f
+    
+    # Step 2: Remove all HomeLab volumes
+    log "🗄️  Step 2/6: Removing all HomeLab Docker volumes..."
+    local volumes=$(docker volume ls --filter "name=homelab" -q 2>/dev/null || true)
+    if [ -n "$volumes" ]; then
+        echo "$volumes" | xargs -r docker volume rm -f
+        info "Removed volumes: $(echo $volumes | tr '\n' ' ')"
+    else
+        info "No HomeLab volumes found"
+    fi
+    
+    # Step 3: Remove HomeLab networks
+    log "🌐 Step 3/6: Removing HomeLab networks..."
+    local networks=$(docker network ls --filter "name=homelab" -q 2>/dev/null || true)
+    if [ -n "$networks" ]; then
+        echo "$networks" | xargs -r docker network rm
+        info "Removed networks: $(echo $networks | tr '\n' ' ')"
+    else
+        info "No HomeLab networks found"
+    fi
+    
+    # Step 4: Remove backup directories
+    log "🗑️  Step 4/6: Removing backup directories..."
+    if [ -d "/opt/homelab" ]; then
+        sudo rm -rf /opt/homelab
+        info "Removed /opt/homelab directory and all backups"
+    else
+        info "No backup directories found"
+    fi
+    
+    # Step 5: Clean up unused Docker resources
+    log "🧹 Step 5/6: Cleaning up unused Docker resources..."
+    docker system prune -f --volumes
+    info "Cleaned up unused containers, networks, images, and volumes"
+    
+    # Step 6: Remove any potential orphaned images
+    log "🏷️  Step 6/6: Removing HomeLab related images..."
+    local images=$(docker images --filter "reference=postgres" --filter "reference=grafana/grafana" --filter "reference=prom/*" --filter "reference=gcr.io/cadvisor/cadvisor" -q 2>/dev/null | sort -u || true)
+    if [ -n "$images" ]; then
+        echo "$images" | xargs -r docker rmi -f 2>/dev/null || true
+        info "Attempted to remove HomeLab-related images"
+    fi
+    
+    echo ""
+    log "✅ RESET COMPLETE! Your HomeLab has been completely wiped."
+    echo ""
+    info "📋 What was removed:"
+    info "   • All containers and their data"
+    info "   • All Docker volumes (postgres-data, grafana-data, etc.)"
+    info "   • All Docker networks (homelab macvlan network)"
+    info "   • All backup files (/opt/homelab/)"
+    info "   • Unused Docker images and system resources"
+    echo ""
+    info "🚀 To start fresh:"
+    info "   $0 start"
+    echo ""
+}
+
 # Show help
 help() {
     cat << EOF
@@ -259,6 +349,7 @@ Commands:
     status      Show status of all services and current network
     logs [service]  Show logs (optional: specific service)
     backup      Backup all data
+    reset --force   🔥 COMPLETE RESET: Wipe all data, volumes, networks, backups
     network     Show current network detection
     mac         Show MAC addresses for current network
     hostnames   Show hostnames for UDM router identification
@@ -279,6 +370,18 @@ Examples:
     $0 hostnames       # Show hostnames for UDM router
     $0 logs postgres   # Show postgres logs
     $0 status          # Show services and network info
+    $0 backup          # Create timestamped backup
+    $0 reset --force   # 🔥 DANGER: Complete wipe and reset
+
+⚠️  RESET COMMAND WARNING:
+    The 'reset --force' command will permanently delete:
+    • All containers and their configurations
+    • All Docker volumes (databases, configs, logs)
+    • All Docker networks
+    • All backup files (/opt/homelab/)
+    • Related Docker images
+    
+    This gives you a completely clean slate but destroys all data!
 
 This script replaces the old approach of:
 - Manual docker commands
@@ -317,6 +420,9 @@ main() {
             ;;
         backup)
             backup
+            ;;
+        reset)
+            reset "$2"
             ;;
         network)
             detect_network
