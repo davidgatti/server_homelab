@@ -65,7 +65,6 @@ services:
     container_name: postgres-backup
     hostname: pg-backup
     restart: unless-stopped
-    user: postgres:postgres
     environment:
       - TZ=Europe/Rome
       - POSTGRES_HOST=postgres
@@ -79,7 +78,7 @@ services:
       - BACKUP_KEEP_MONTHS=6
       - HEALTHCHECK_PORT=8080
     volumes:
-      - /opt/homelab/backups/postgres:/backups
+      - postgres-backup-data:/backups
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.55
@@ -451,6 +450,8 @@ services:
 
 volumes:
   postgres-data:
+    driver: local
+  postgres-backup-data:
     driver: local
   pgadmin-data:
     driver: local
