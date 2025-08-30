@@ -111,6 +111,7 @@ Break complex work into 3-5 stages. Document in `IMPLEMENTATION_PLAN.md`:
   - Preserve existing service functionality
   - Follow established IP allocation patterns
   - Include appropriate Prometheus labels
+  - Use version-controlled configuration (never manual UI changes)
 
 - **Before committing infrastructure changes**:
   - Test full restart: `./homelab.sh restart`
@@ -118,6 +119,13 @@ Break complex work into 3-5 stages. Document in `IMPLEMENTATION_PLAN.md`:
   - Check monitoring targets in Prometheus
   - Ensure configuration files are properly mounted
   - Validate resource usage is within limits
+  - Test Grafana dashboards load from JSON files
+
+- **Configuration Management Rules**:
+  - All configs live in `configs/` directory
+  - Grafana dashboards are JSON files, not UI creations
+  - Database schemas/migrations through version-controlled scripts
+  - Environment variables for secrets, files for configuration
 
 ### Error Handling
 
@@ -330,6 +338,126 @@ docker compose exec postgres curl http://192.168.3.10:3000
 # Browse to http://192.168.3.10:3000
 ```
 
+## 📊 Grafana Dashboard Management (Version-Controlled)
+
+### 🧠 Critical Understanding
+**Dashboards are NOT managed through Grafana UI**. They are version-controlled JSON files that auto-provision.
+
+### Dashboard Workflow (NEVER use Grafana UI for permanent changes)
+
+```bash
+# ❌ WRONG - Changes lost on container restart
+# Edit dashboard in Grafana web UI → Save → Changes disappear
+
+# ✅ CORRECT - Version-controlled dashboard creation
+# 1. Create/edit JSON in configs/grafana/dashboards/
+# 2. Restart Grafana service
+# 3. Dashboard appears automatically
+```
+
+### Grafana Provisioning Architecture
+
+```
+configs/grafana/
+├── grafana.ini                    # Main Grafana config
+├── provisioning/
+│   ├── dashboards/default.yaml   # Dashboard provisioning config  
+│   └── datasources/              # Prometheus datasource config
+└── dashboards/                   # JSON dashboard definitions
+    ├── docker.json              # Docker monitoring dashboard
+    ├── logs.json                 # Log analysis dashboard  
+    └── postgres.json             # Database monitoring dashboard
+```
+
+### Adding New Dashboards
+
+**Step 1: Create Dashboard JSON**
+```bash
+# Create new dashboard file
+touch configs/grafana/dashboards/new-service.json
+
+# Structure (minimal example):
+{
+  "dashboard": {
+    "id": null,
+    "title": "Service Name Monitoring",
+    "tags": ["homelab", "service-name"],
+    "timezone": "browser",
+    "panels": [
+      // Panel definitions here
+    ]
+  }
+}
+```
+
+**Step 2: Auto-Provision Dashboard**
+```bash
+# Restart Grafana to load new dashboard
+docker compose restart grafana
+
+# Verify dashboard appears
+# Browse to http://192.168.3.10:3000
+```
+
+### Dashboard Development Workflow
+
+**Option 1: JSON-First (Recommended)**
+1. Copy existing dashboard JSON from `configs/grafana/dashboards/`
+2. Modify JSON directly for new service
+3. Restart Grafana to test
+4. Iterate on JSON file
+
+**Option 2: UI-to-JSON (For Complex Dashboards)**
+1. Create dashboard in Grafana UI for experimentation
+2. Export JSON from UI (Settings → JSON Model)  
+3. Save exported JSON to `configs/grafana/dashboards/`
+4. Delete temporary dashboard from UI
+5. Restart Grafana to provision from file
+
+### Key Provisioning Concepts
+
+**Automatic Management:**
+- Dashboards load from `/etc/grafana/dashboards/` (mounted from repo)
+- Changes to JSON files require Grafana restart to apply
+- Dashboard IDs are auto-assigned (keep `"id": null`)
+- Editable in UI but changes are **temporary**
+
+**Persistence Rules:**
+- ✅ Changes in JSON files = Permanent
+- ❌ Changes in Grafana UI = Lost on restart
+- ✅ Version controlled = Team accessible  
+- ❌ UI-only changes = Developer-only
+
+### Testing Dashboard Changes
+
+```bash
+# 1. Edit dashboard JSON file
+vim configs/grafana/dashboards/service-name.json
+
+# 2. Restart Grafana to apply changes  
+docker compose restart grafana
+
+# 3. Test dashboard loads correctly
+docker run --rm --network host curlimages/curl:latest \
+  curl -f http://192.168.3.10:3000/api/health
+
+# 4. Verify in UI at http://192.168.3.10:3000
+```
+
+### Common Dashboard Patterns
+
+**Service Monitoring Template:**
+- CPU/Memory usage panels
+- Request rate/latency panels  
+- Error rate panels
+- Health check status
+- Prometheus metrics integration
+
+**File Naming Convention:**
+- `service-name.json` - Individual service dashboards
+- `overview.json` - High-level system dashboards
+- `logs.json` - Log analysis dashboards
+
 ## 🎯 30-Second Agent Orientation
 
 ### Essential Files (Read in Order)
@@ -350,6 +478,7 @@ Support Services (backup, admin tools)
 
 ### Common Tasks Quick Reference
 - **Add service**: Copy pattern from compose.yaml + update IP range
+- **Add dashboard**: Create JSON in `configs/grafana/dashboards/` + restart Grafana
 - **Test change**: `./homelab.sh restart && ./homelab.sh status`
 - **Document**: Create logbook entry for major changes
 - **Troubleshoot**: Check health endpoints in ARCHITECTURE.md
