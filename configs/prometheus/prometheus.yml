@@ -89,6 +89,7 @@ scrape_configs:
         - http://192.168.5.62  # cAdvisor
         - http://192.168.5.66  # Loki
         - http://192.168.5.67  # Promtail
+        - http://192.168.5.10  # OpenSpeedtest
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target

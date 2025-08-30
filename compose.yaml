@@ -496,6 +496,42 @@ services:
           memory: 100M        # Guaranteed memory for data
           cpus: '0.05'        # 5% CPU minimum
 
+  speedtest:
+    image: openspeedtest/latest
+    container_name: speedtest
+    hostname: speedtest
+    restart: unless-stopped
+    labels:
+      - "homelab.description=Local network speed test server for bandwidth testing"
+      - "homelab.purpose=Self-hosted speed test to measure network performance without external dependencies"
+      - "homelab.category=network"
+      - "homelab.access=HTTP port 80"
+      - "homelab.docs=https://github.com/openspeedtest/Speed-Test"
+    environment:
+      - TZ=Europe/Rome
+      - CHANGE_CONTAINER_PORTS=True
+      - HTTP_PORT=80
+    volumes:
+      - speedtest-logs:/var/log/letsencrypt
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.10
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:0a  # 10 → 0x0A
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 128M        # Lightweight speed test server
+          cpus: '0.2'         # Can spike during speed tests
+        reservations:
+          memory: 64M         # Small guaranteed allocation
+          cpus: '0.05'        # 5% CPU minimum
+
   redis-exporter:
     image: oliver006/redis_exporter:latest
     container_name: redis-exporter
@@ -626,6 +662,8 @@ volumes:
   alertmanager-data:
     driver: local
   redis-data:
+    driver: local
+  speedtest-logs:
     driver: local
   loki-data:
     driver: local
