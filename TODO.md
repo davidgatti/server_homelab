@@ -286,5 +286,3 @@
 ---
 
 **Your HomeLab is already impressive! Any of these additions will build on your solid foundation. What catches your eye first?** 🚀
-grafana/loki:latest
-grafana/promtail:latest
