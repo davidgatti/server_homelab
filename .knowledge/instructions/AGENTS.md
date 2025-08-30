@@ -214,3 +214,47 @@ AI agents must create timestamped logbook entries (`.logbook/YYYY-MM-DD_HHMM_tit
 - Update plan documentation as you go
 - Learn from existing implementations
 - Stop after 3 failed attempts and reassess
+
+## 🗺️ Navigation Patterns for AI Agents
+
+### Before Any Work
+```bash
+# 1. Check system state
+./homelab.sh status
+
+# 2. Review recent changes
+ls -la .knowledge/logbook/ | tail -3
+
+# 3. Validate current setup
+docker compose config --quiet
+```
+
+### Finding Relevant Information
+- **Service patterns**: Search `compose.yaml` for similar services
+- **Network allocation**: Check `ARCHITECTURE.md` IP ranges
+- **Resource limits**: Follow patterns from existing services
+- **Testing examples**: Use `.knowledge/instructions/TESTING.md` templates
+
+## 🎯 30-Second Agent Orientation
+
+### Essential Files (Read in Order)
+1. [`README.md`](../../README.md) - Project overview
+2. [Latest logbook entry](.knowledge/logbook/) - Current state
+3. [`ARCHITECTURE.md`](ARCHITECTURE.md#agent-context-summary) - How it works
+4. [`TODO.md`](../../TODO.md) - What's next
+5. [`TESTING.md`](TESTING.md) - How to validate
+
+### Mental Model
+```
+Foundation Services (postgres, monitoring) 
+    ↓ 
+Core Services (grafana, prometheus)
+    ↓ 
+Support Services (backup, admin tools)
+```
+
+### Common Tasks Quick Reference
+- **Add service**: Copy pattern from compose.yaml + update IP range
+- **Test change**: `./homelab.sh restart && ./homelab.sh status`
+- **Document**: Create logbook entry for major changes
+- **Troubleshoot**: Check health endpoints in ARCHITECTURE.md
