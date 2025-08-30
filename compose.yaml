@@ -568,6 +568,44 @@ services:
           memory: 256M        # Guaranteed memory for vector storage
           cpus: '0.1'         # 10% CPU minimum
 
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    hostname: n8n
+    restart: unless-stopped
+    labels:
+      - "homelab.description=Workflow automation platform for connecting apps and services"
+      - "homelab.purpose=Low-code/no-code automation tool for integrating various APIs and services"
+      - "homelab.category=automation"
+      - "homelab.access=Web UI on port 80"
+      - "homelab.features=Visual workflow builder, API integrations, scheduling, webhooks"
+      - "homelab.docs=https://docs.n8n.io/"
+    environment:
+      - TZ=Europe/Rome
+      - GENERIC_TIMEZONE=Europe/Rome
+      - N8N_SECURE_COOKIE=false
+      - N8N_PORT=80
+    volumes:
+      - n8n-data:/home/node/.n8n
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.14
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:0e  # 14 → 0x0E
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+    deploy:
+      resources:
+        limits:
+          memory: 512M        # n8n can be memory intensive with complex workflows
+          cpus: '0.4'         # Workflow execution can be CPU intensive
+        reservations:
+          memory: 256M        # Guaranteed memory for workflow execution
+          cpus: '0.1'         # 10% CPU minimum
+
   redis-exporter:
     image: oliver006/redis_exporter:latest
     container_name: redis-exporter
@@ -702,6 +740,8 @@ volumes:
   speedtest-logs:
     driver: local
   qdrant-data:
+    driver: local
+  n8n-data:
     driver: local
   loki-data:
     driver: local

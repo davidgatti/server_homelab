@@ -91,6 +91,7 @@ scrape_configs:
         - http://192.168.5.67  # Promtail
         - http://192.168.5.10  # OpenSpeedtest
         - http://192.168.5.13  # Qdrant
+        - http://192.168.5.14  # n8n
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
