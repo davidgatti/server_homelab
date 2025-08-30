@@ -11,8 +11,6 @@
 - [x] **Resource Management**: CPU/Memory limits optimized for Celeron N3350
 - [x] **Health Checks**: All services with proper health monitoring
 
----
-
 ## 🎯 **Service Expansion Roadmap**
 
 ### 🌐 **Network & Security Services**
@@ -24,24 +22,6 @@
   - **Integration**: Perfect for your existing services
   - **Priority**: ⭐⭐⭐ HIGH (Foundation for external access)
 
-- [ ] **NGINX Proxy Manager** - Alternative with web UI
-  - **Benefits**: Web-based configuration, SSL management
-  - **Resource**: ~100MB RAM
-  - **Priority**: ⭐⭐ MEDIUM (Alternative to Traefik)
-
-#### **DNS & Ad Blocking**
-- [ ] **Pi-hole** - Network-wide ad blocking
-  - **Benefits**: Block ads/trackers for entire network, DNS management
-  - **Resource**: ~30MB RAM, very efficient
-  - **Integration**: Works with existing network setup
-  - **Priority**: ⭐⭐⭐ HIGH (Immediate network improvement)
-
-- [ ] **Unbound** - Recursive DNS resolver
-  - **Benefits**: Enhanced privacy, faster DNS resolution
-  - **Resource**: ~20MB RAM
-  - **Integration**: Pairs perfectly with Pi-hole
-  - **Priority**: ⭐⭐ MEDIUM (Performance enhancement)
-
 #### **VPN & Remote Access**
 - [ ] **WireGuard** - Modern VPN server
   - **Benefits**: Secure remote access to HomeLab
@@ -52,8 +32,6 @@
   - **Benefits**: Easy setup, automatic NAT traversal
   - **Resource**: ~15MB RAM
   - **Priority**: ⭐⭐ MEDIUM (Alternative to WireGuard)
-
----
 
 ### 📁 **File Storage & Media Services**
 
@@ -87,8 +65,6 @@
   - **Resource**: ~100MB RAM each
   - **Priority**: ⭐ LOW (Advanced media automation)
 
----
-
 ### 🏠 **Home Automation**
 
 #### **Core Home Automation**
@@ -110,8 +86,6 @@
   - **Hardware**: Requires Zigbee USB dongle
   - **Priority**: ⭐ LOW (Hardware dependent)
 
----
-
 ### 💻 **Development & Productivity**
 
 #### **Development Tools**
@@ -120,17 +94,6 @@
   - **Resource**: ~100MB RAM (uses your PostgreSQL)
   - **Integration**: Perfect database integration
   - **Priority**: ⭐⭐⭐ HIGH (If you code)
-
-- [ ] **Jenkins** - CI/CD automation
-  - **Benefits**: Automated building, testing, deployment
-  - **Resource**: ~500MB RAM (Java-based, heavy)
-  - **Celeron Note**: May be resource intensive
-  - **Priority**: ⭐⭐ MEDIUM (Development workflows)
-
-- [ ] **Portainer** - Docker management UI
-  - **Benefits**: Easy container management, visual interface
-  - **Resource**: ~50MB RAM
-  - **Priority**: ⭐⭐ MEDIUM (Docker visualization)
 
 #### **Database & Caching**
 - [x] **Redis** - In-memory data store ✅ **NEXT TO IMPLEMENT**
@@ -155,8 +118,6 @@
   - **Benefits**: No database needed, very lightweight
   - **Resource**: ~20MB RAM
   - **Priority**: ⭐ LOW (Simple documentation)
-
----
 
 ### 🔒 **Security & Backup**
 
@@ -189,8 +150,6 @@
   - **Resource**: ~50MB RAM
   - **Priority**: ⭐⭐ MEDIUM (Advanced backup)
 
----
-
 ### 📊 **Enhanced Monitoring**
 
 #### **System Monitoring**
@@ -201,88 +160,14 @@
   - **Priority**: ⭐⭐⭐ HIGH (Complete monitoring)
 
 #### **Log Management**
-- [ ] **Loki** - Log aggregation system
+- [*] **Loki** - Log aggregation system
   - **Benefits**: Centralized log collection and analysis
   - **Resource**: ~150MB RAM
   - **Integration**: Grafana integration
   - **Priority**: ⭐⭐ MEDIUM (Advanced monitoring)
 
-- [ ] **Promtail** - Log collection agent
+- [*] **Promtail** - Log collection agent
   - **Benefits**: Collects logs from all containers
   - **Resource**: ~30MB RAM
   - **Integration**: Feeds Loki
   - **Priority**: ⭐⭐ MEDIUM (With Loki)
-
-#### **Alternative Monitoring**
-- [ ] **Uptime Kuma** - Beautiful uptime monitoring
-  - **Benefits**: Pretty uptime dashboards, notifications
-  - **Resource**: ~50MB RAM
-  - **Integration**: Alternative/complement to Blackbox
-  - **Priority**: ⭐ LOW (You have Blackbox)
-
----
-
-## 🎯 **Recommended Implementation Order**
-
-### **Phase 1: Network Foundation** ⭐⭐⭐
-1. **Traefik** - Clean URLs and SSL management
-2. **Pi-hole** - Network-wide ad blocking
-3. **Node Exporter** - Complete monitoring
-
-### **Phase 2: Core Services** ⭐⭐
-4. **Nextcloud** - Private cloud storage
-5. **Vaultwarden** - Password management
-6. **Gitea** - If you do development
-
-### **Phase 3: Specialized Services** ⭐
-7. **Home Assistant** - If you have smart home devices
-8. **Jellyfin** - If you want media streaming
-9. **Enhanced security** - Authelia, Vault
-
-### **Phase 4: Advanced Features**
-10. **Log management** - Loki + Promtail
-11. **Documentation** - Outline or BookStack
-12. **Advanced backup** - Duplicati or Restic
-
----
-
-## 📊 **Resource Planning**
-
-### **Current Usage Estimate**
-- **Total RAM**: ~2.5GB of your 5.6GB used
-- **CPU**: Well within Celeron N3350 limits
-- **Available for expansion**: ~3GB RAM
-
-### **Priority Services Resource Impact**
-- **Traefik + Pi-hole + Node Exporter**: +100MB (~3% impact)
-- **Nextcloud**: +200MB (~6% impact)
-- **Vaultwarden**: +30MB (~1% impact)
-
-**Total Phase 1-2**: +330MB (still ~2.8GB total usage = safe!)
-
----
-
-## 🤔 **Decision Questions**
-
-**To help prioritize, consider:**
-
-1. **Do you need external access?** → Start with Traefik
-2. **Tired of ads on your network?** → Pi-hole is amazing
-3. **Want to replace Google Drive?** → Nextcloud
-4. **Do you code/develop?** → Gitea
-5. **Have smart home devices?** → Home Assistant
-6. **Want media streaming?** → Jellyfin
-7. **Need better password management?** → Vaultwarden
-
----
-
-## 📝 **Next Steps**
-
-1. **Review this list** and mark services that interest you
-2. **Pick 1-3 services** to start with (recommend Traefik + Pi-hole + Node Exporter)
-3. **Test resource impact** before adding more
-4. **Build incrementally** - your foundation supports easy additions!
-
----
-
-**Your HomeLab is already impressive! Any of these additions will build on your solid foundation. What catches your eye first?** 🚀

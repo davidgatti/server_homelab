@@ -1,235 +1,66 @@
-# Development Guidelines
+# Work styles
 
-## Philosophy
+## 🎯 Core Identity
 
-### Core Beliefs
+This is a set of beliefs and behaviors that define how to approach work, communication, problem-solving, and tools. It's not about titles. It's about operating with clarity, precision, and systems thinking — every day.
 
-* **Incremental progress over big bangs** — Small changes that compile and pass tests
-* **Learning from existing code** — Study and plan before implementing
-* **Pragmatic over dogmatic** — Adapt to project reality
-* **Clear intent over clever code** — Be boring and obvious
-* **No magic, just clean habits** — Think in reusable systems
+## 🧠 Thinking Patterns
 
-### Simplicity Means
+- "How will this fail?" always comes before "How does this work?"
+- Complexity is avoided not with tools, but with **opinionated consistency**
+- Every script, config, and module has a job, and it should look like it
+- If a human has to touch it, it should guide them, not confuse them
 
-* Single responsibility per function/class
-* Avoid premature abstractions
-* No clever tricks — choose the boring solution
-* If you need to explain it, it's too complex
+## 🔍 Daily Mindset
 
-## Mindset
+- Systems are made of small, clean, modular parts
+- Every task should be traceable, testable, and restartable
+- Logs are for the future — make them honest and human
+- Ambiguity is the enemy. The fix is clarity through structure
 
-### Thinking Patterns
+## 🧱 General Work Style
 
-* "How will this fail?" always comes before "How does this work?"
-* Complexity is avoided with **opinionated consistency**, not more tools
-* Each script/config/module should do one thing and look like it
-* Ambiguity is the enemy — structure is the cure
+- Build from scratch instead of untangling messes
+- Comments explain the "why," not the "what"
+- Every tool should match how the brain navigates problems
+- Create naming patterns, folder structures, and file layouts that scale
 
-### Daily Habits
+## 🗂 Documentation & Communication
 
-* Systems are built from clean, modular parts
-* All tasks should be traceable, testable, restartable
-* Logs are written for future humans — make them human
-* Prefer clarity, precision, and structure
+- Write like documenting a clean installation
+- Numbered steps, consistent symbols (`-->`, `^^^`), and structure matter
+- Always assume the reader has zero context
+- Use ASCII symbols and maintain formatting discipline
 
----
+## ⚙️ Technical Habits (Non-Code)
 
-## Process
+- Clean up before automating anything
+- Always dry-run or simulate before committing
+- Run systems locally to understand them deeply
+- Avoid "smart defaults" — make decisions explicit
 
-### 0. Knowledge Base First
+## 💬 Interaction Style
 
-**ALWAYS check `.knowledge/` folder before starting major work:**
+- Be direct, not rude. Efficient, not rushed
+- Eliminate fluff — say what matters, then stop
+- Ask questions that expose flaws in logic
+- Prioritize clarity over diplomacy when time matters
 
-* `.knowledge/instructions/` — Implementation guidance
-* `.knowledge/documentation/` — API/tool references
-* `.knowledge/logbook/` — Project history
+## 🎨 Aesthetic Choices
 
-### 1. Planning & Staging
+- Terminal must be pixel-aligned, clean, modern
+- Dark red themes, monospaced fonts, zero clutter
+- Interfaces should reflect system logic, not just look nice
 
-For major changes:
+## 🧬 Summary
 
-1. **Create logbook entry**
+Operate like this:
 
-   ```bash
-   cd .knowledge/logbook
-   ./init.sh 'brief-description-of-change'
-   ```
+- Think in reusable systems
+- Use structure to remove doubt
+- Document once, with total clarity
+- Build things that can be understood by others in minutes
 
-2. **Create `IMPLEMENTATION_PLAN.md`** with staged goals:
+No magic. Just clean habits, enforced daily.
 
-   ```markdown
-   ## Stage N: [Name]
-   **Goal**: [Specific deliverable]  
-   **Success Criteria**: [Testable outcomes]  
-   **Tests**: [Specific test cases]  
-   **Status**: [Not Started|In Progress|Complete]
-   ```
-
-3. **Update statuses**, remove plan after all stages complete, and document in logbook.
-
-### 2. Implementation Flow
-
-1. Understand existing code
-2. Write failing test (red)
-3. Write minimum code to pass (green)
-4. Refactor with tests passing
-5. Commit with clear messages linked to plan
-
-### 3. When Stuck (After 3 Attempts)
-
-1. Document what failed (errors, assumptions)
-2. Research 2–3 alternatives
-3. Question fundamentals (abstraction, approach, complexity)
-4. Try a different angle (library, architecture, simplify)
-
----
-
-## Technical Standards
-
-### Architecture
-
-* Composition over inheritance
-* Interfaces over singletons
-* Explicit over implicit
-* Test-driven where possible
-
-### Code Quality
-
-* Each commit must:
-
-  * Compile
-  * Pass all tests
-  * Include new tests
-  * Follow formatting/linting
-
-* Before committing:
-
-  * Run linter/formatter
-  * Self-review
-  * Clear commit message explaining “why”
-
-### Error Handling
-
-* Fail fast, with context
-* Never swallow exceptions silently
-* Handle at correct layer for visibility
-
----
-
-## Decision Framework
-
-When choices exist, prefer:
-
-1. **Testability**
-2. **Readability**
-3. **Consistency**
-4. **Simplicity**
-5. **Reversibility**
-
----
-
-## Integration Practices
-
-### Learning the Codebase
-
-* Find 3 similar implementations
-* Match libraries, structure, test approach
-
-### Tooling
-
-* Use project build/test/lint tools
-* Don't add new tools without strong justification
-
----
-
-## Quality Gates
-
-### Definition of Done
-
-* [ ] Tests written and passing
-* [ ] Linter/formatter clean
-* [ ] Project conventions followed
-* [ ] Clear commit messages
-* [ ] Matches the plan
-* [ ] No TODOs without issue links
-
-### Test Guidelines
-
-* Test behavior, not implementation
-* Prefer one assertion per test
-* Use meaningful test names
-* Tests must be deterministic
-
----
-
-## Documentation & Communication
-
-* Document like it’s a clean install
-* Number steps, use ASCII (`-->`, `^^^`)
-* Assume the reader knows nothing
-* Enforce structure and formatting discipline
-
----
-
-## Non-Code Technical Habits
-
-* Clean up before automating
-* Simulate or dry-run before real runs
-* Run things locally to understand them
-* Avoid hidden defaults — be explicit
-
----
-
-## Personal Conduct
-
-### Work Style
-
-* Build fresh, don’t fix spaghetti
-* Comments explain “why,” not “what”
-* Tools should match problem-solving flow
-* Structure folders and names to scale
-
-### Communication
-
-* Be direct, not rude
-* Say what matters, then stop
-* Ask clear, critical questions
-* Prioritize clarity over niceness when needed
-
----
-
-## Aesthetic Choices
-
-* Pixel-perfect terminals
-* Monospace, dark red themes
-* Minimal, modern, logic-driven interfaces
-
----
-
-## Final Reminder
-
-**NEVER**:
-
-* Use `--no-verify`
-* Disable tests
-* Commit broken code
-* Skip `.knowledge/` or logbook
-
-**ALWAYS**:
-
-* Reference `.knowledge/` before starting
-* Create plans for infra/arch work
-* Write clean, traceable code
-* Document failures and rethink after 3 tries
-
----
-
-## Summary
-
-* Build reusable systems
-* Enforce structure daily
-* Document once — clearly
-* Eliminate magic, enforce habits
-
-This is how we do things — properly.
+This is how things get done — properly.
