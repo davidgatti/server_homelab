@@ -722,6 +722,40 @@ services:
           memory: 30M         # Small guaranteed allocation
           cpus: '0.02'        # 2% CPU minimum
 
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    hostname: jellyfin
+    restart: unless-stopped
+    labels:
+      - "homelab.description=Media server for streaming movies, TV shows, music, and photos"
+      - "homelab.purpose=Self-hosted media streaming platform with transcoding and remote access"
+      - "homelab.category=media"
+      - "homelab.access=Web UI on port 8096"
+      - "homelab.features=Hardware transcoding, DLNA/UPnP, mobile apps, live TV"
+      - "homelab.storage=/mnt/nas_media (read-only media library)"
+      - "homelab.docs=https://jellyfin.org/docs/"
+    environment:
+      - TZ=Europe/Rome
+      - JELLYFIN_PublishedServerUrl=http://192.168.5.16:8096
+    volumes:
+      - /mnt/nas_media:/media:ro
+      - jellyfin-config:/config
+      - jellyfin-cache:/cache
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.16
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:10  # 16 → 0x10
+    # No healthcheck as per production configuration
+    deploy:
+      resources:
+        limits:
+          memory: 2G          # Media transcoding can be memory intensive
+          cpus: '1.0'         # Hardware transcoding benefits from CPU allocation
+        reservations:
+          memory: 512M        # Guaranteed memory for media server
+          cpus: '0.2'         # 20% CPU minimum for streaming
+
 volumes:
   postgres-data:
     driver: local
@@ -746,6 +780,10 @@ volumes:
   loki-data:
     driver: local
   promtail-positions:
+    driver: local
+  jellyfin-config:
+    driver: local
+  jellyfin-cache:
     driver: local
 
 networks:
