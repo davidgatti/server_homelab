@@ -1,5 +1,24 @@
 # HomeLab Testing Guide
 
+## 🚨 MacVLAN Testing (HOST CANNOT REACH MACVLAN)
+
+**CRITICAL REALITY**: Docker host cannot reach MacVLAN containers. This is by design.
+
+### Correct MacVLAN Testing
+```bash
+# ❌ This will ALWAYS fail (and that's correct)
+curl http://192.168.3.x:port  # Host is isolated from MacVLAN
+
+# ✅ Test from network perspective
+docker run --rm --network host curlimages/curl:latest \
+  curl -f http://192.168.3.x:port/health
+
+# ✅ Test from another container
+docker compose exec postgres curl -f http://192.168.3.x:port/health
+```
+
+**If the first command fails, that's normal. Use the second/third commands.**
+
 ## MacVLAN Network Testing Strategy
 
 ### Problem

@@ -235,6 +235,101 @@ docker compose config --quiet
 - **Resource limits**: Follow patterns from existing services
 - **Testing examples**: Use `.knowledge/instructions/TESTING.md` templates
 
+## MacVLAN Network Testing (Critical Understanding)
+
+### 🧠 Mental Model Shift
+
+```
+Docker Host: CANNOT reach MacVLAN containers directly
+MacVLAN containers: Live on LAN as independent network devices
+Testing: Must be done from ANOTHER container or external LAN device
+```
+
+**Key Reality**: MacVLAN = "Container gets real LAN IP, bypasses Docker host entirely"
+
+### ⚡ Correct MacVLAN Testing Pattern
+
+```bash
+# ❌ WRONG - This will ALWAYS fail
+curl 192.168.3.x:port  # Host cannot reach MacVLAN
+
+# ✅ CORRECT - Test from another container
+docker run --rm --network host curlimages/curl:latest curl -f http://192.168.3.x:port/health
+
+# ✅ ALTERNATIVE - Test from non-MacVLAN container
+docker compose exec postgres curl -f http://192.168.3.x:port/health
+
+# ✅ BEST - Test from external device (phone, laptop on same LAN)
+# Browse to http://192.168.3.x:port from another device
+```
+
+### 🚨 Critical Agent Mistakes (STOP DOING THESE)
+
+| ❌ Wrong (Will Always Fail) | ✅ Correct Approach |
+|---|---|
+| `curl 192.168.3.x` from host terminal | Use `--network host` container for testing |
+| "Service is down" when host can't reach it | Test from LAN perspective, not host |
+| Debug Docker networking | Think "network appliance" not "Docker container" |
+| Check localhost bindings | MacVLAN bypasses localhost entirely |
+
+### 📋 MacVLAN Service Testing Checklist
+
+```bash
+# 1. Container started successfully
+docker compose ps | grep service-name | grep "Up"
+
+# 2. Container has MacVLAN IP
+docker compose exec service-name ip addr show eth0 | grep 192.168.3
+
+# 3. Service accessible from network perspective (NOT host)
+docker run --rm --network host curlimages/curl:latest \
+  curl -f http://192.168.3.x:port/health
+
+# 4. Service reachable from other containers
+docker compose exec postgres curl -f http://192.168.3.x:port/health
+
+# 5. Service accessible from external LAN device
+# Test from phone/laptop: http://192.168.3.x:port
+```
+
+### 🔧 MacVLAN Debugging Reality
+
+```bash
+# Check container IP allocation
+docker compose exec service-name ip addr show eth0
+
+# Verify service is listening (from inside container)
+docker compose exec service-name netstat -tulpn | grep :PORT
+
+# Test network isolation reality
+ping 192.168.3.x  # This WILL FAIL from host - that's correct!
+
+# Test from network perspective
+docker run --rm --network host alpine ping -c 1 192.168.3.x
+```
+
+### 💡 MacVLAN Success Indicators
+
+**Working MacVLAN service:**
+- Container shows `Up` in `docker compose ps`
+- Container has IP in 192.168.3.x range
+- Service responds to `curl` from `--network host` container
+- Service accessible from other LAN devices
+- Host CANNOT reach it directly (this is expected!)
+
+**Testing Commands That Actually Work:**
+
+```bash
+# From Testing perspective (not host)
+docker run --rm --network host curlimages/curl:latest curl http://192.168.3.10:3000
+
+# From another service container
+docker compose exec postgres curl http://192.168.3.10:3000
+
+# From external device (phone, laptop)
+# Browse to http://192.168.3.10:3000
+```
+
 ## 🎯 30-Second Agent Orientation
 
 ### Essential Files (Read in Order)
