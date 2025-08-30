@@ -127,9 +127,43 @@ Break complex work into 3-5 stages. Document in `IMPLEMENTATION_PLAN.md`:
   - Database schemas/migrations through version-controlled scripts
   - Environment variables for secrets, files for configuration
 
-### Service Dependencies
+### Service Dependencies (Critical for New Services)
 
-Always add `depends_on` with health checks for services that rely on other service to work.
+**Rule**: Always add `depends_on` with health checks for new services.
+
+```yaml
+new-service:
+  depends_on:
+    postgres:                    # If service needs database
+      condition: service_healthy
+    prometheus:                  # If service needs monitoring
+      condition: service_healthy
+  healthcheck:                   # REQUIRED if other services will depend on this
+    test: ["CMD", "curl", "-f", "http://localhost:PORT/health"]
+    interval: 30s
+    timeout: 10s
+    retries: 3
+    start_period: 30s
+```
+
+**Dependency Patterns**:
+- **Database services**: `depends_on: postgres`
+- **Monitoring extensions**: `depends_on: prometheus`  
+- **Admin tools**: `depends_on: postgres` (usually)
+- **Independent services**: No dependencies (starts immediately)
+
+**Health Check Requirements**:
+- ✅ **Must have**: Services that others depend on
+- ❌ **Not needed**: Final services in dependency chain
+- 🔧 **Test endpoint**: `/health`, `/healthz`, or service-specific endpoint
+
+### MAC Address Pattern (For New Services)
+
+Format: `02:42:48:4C:NN:XX`
+- `NN` = Network ID (auto-detected: 03=192.168.3.x, 05=192.168.5.x)  
+- `XX` = IP last octet in hex (e.g., IP .60 = MAC :3C)
+
+Example: Service on 192.168.5.60 gets MAC `02:42:48:4C:05:3C`
 
 ### Error Handling
 
@@ -481,7 +515,7 @@ Support Services (backup, admin tools)
 ```
 
 ### Common Tasks Quick Reference
-- **Add service**: Copy pattern from compose.yaml + update IP range + add `depends_on`
+- **Add service**: Copy pattern from compose.yaml + update IP/MAC + add `depends_on`
 - **Add dashboard**: Create JSON in `configs/grafana/dashboards/` + restart Grafana
 - **Test change**: `./homelab.sh restart && ./homelab.sh status`
 - **Document**: Create logbook entry for major changes
