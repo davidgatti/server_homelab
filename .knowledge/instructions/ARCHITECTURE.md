@@ -197,254 +197,132 @@ docker_sd_configs:
 ```yaml
 labels:
   - "prometheus.scrape=true"      # Enable monitoring
-  - "prometheus.port=8080"        # Service port
   - "prometheus.job=servicename"  # Job classification
   - "prometheus.path=/metrics"    # Metrics endpoint
-```
-
-## Automation & Tooling
-
-### Auto-Detection Features
-
-**Network Interface Detection**:
-```bash
-# Automatic detection
-interface=$(ip route | grep default | awk '{print $5}' | head -1)
-export NETWORK_INTERFACE="$interface"
-```
-
-**Environment Variable Pattern**:
-```yaml
-parent: ${NETWORK_INTERFACE:-eno1}  # Auto-detected with fallback
-```
-
-### Management Script (homelab.sh)
-
-**Core Functions**:
-- `check_dependencies()`: Verify Docker setup
-- `detect_network_interface()`: Auto-detect or use .env
-- `start()`, `stop()`, `restart()`: Service lifecycle
-- `status()`: Health and network information
-- `logs()`: Centralized log access
-- `backup()`: Data protection
-
-**Usage Pattern**:
-```bash
-./homelab.sh start    # Auto-detects everything, starts stack
-./homelab.sh status   # Shows services, network, volumes
-./homelab.sh logs prometheus  # Service-specific logs
 ```
 
 ## Extension Patterns
 
 ### Adding New Services
 
-**Step 1: Define Service**
+**Required Elements for New Services:**
 ```yaml
-redis:
-  image: redis:latest
-  container_name: redis
+new-service:
+  image: service:latest
+  container_name: service-name
   restart: unless-stopped
   networks:
     homelab:
       ipv4_address: 192.168.3.XX  # Next available IP
+      mac_address: "02:42:48:4C:NN:XX"  # See AGENTS.md for pattern
   volumes:
-    - redis-data:/data
+    - service-data:/data
   labels:
-    - "prometheus.scrape=true"
-    - "prometheus.port=6379"
-    - "prometheus.job=redis"
+    - "prometheus.scrape=true"    # Enable monitoring
+    - "prometheus.port=PORT"      # Service port
+    - "prometheus.job=service-name"
+  depends_on:
+    postgres: { condition: service_healthy }  # If needed
 ```
 
-**Step 2: Add Volume**
+**Don't forget to add the volume:**
 ```yaml
 volumes:
-  redis-data:
+  service-data:
     driver: local
 ```
 
-**Step 3: Update Environment**
-```bash
-# .env
-REDIS_IP=192.168.3.XX
-REDIS_MEMORY_LIMIT=256M
-```
+### Configuration Strategy
 
-### Configuration Patterns
+**External configs for maintainability:**
+- Create `configs/service-name/` directory
+- Mount as read-only: `./configs/service-name/config.yml:/app/config.yml:ro`
+- Version control all configuration files
 
-**For services needing custom config:**
-```yaml
-# 1. Create config directory
-configs/service-name/
-
-# 2. Mount configuration
-volumes:
-  - ./configs/service-name/config.yml:/app/config.yml:ro
-
-# 3. Version control settings
-git add configs/service-name/
-```
-
-### Monitoring Integration
-
-**For new services with metrics:**
-```yaml
-labels:
-  - "prometheus.scrape=true"
-  - "prometheus.port=PORT"
-  - "prometheus.path=/metrics"  # or /health, /stats
-  - "prometheus.job=service-name"
-```
-
-**For services without native metrics:**
-```yaml
-# Add exporter sidecar
-service-exporter:
-  image: appropriate/exporter:latest
-  networks:
-    homelab:
-      ipv4_address: 192.168.3.YY
-  labels:
-    - "prometheus.scrape=true"
-```
-
-## Fresh System Deployment
+## Quick Start
 
 ### Prerequisites
-1. **Docker Installation**: `curl -fsSL https://get.docker.com | sudo bash`
-2. **User Permissions**: `sudo usermod -aG docker $USER` (then logout/login)
-3. **Docker Context**: `docker context use default`
+1. **Docker**: `curl -fsSL https://get.docker.com | sudo bash`
+2. **User Access**: `sudo usermod -aG docker $USER` (logout/login required)
+3. **Regular Docker**: `docker context use default` (not rootless)
 
-### Deployment Process
-```bash
-# 1. Clone and configure
-git clone <repo>
-cd HomeLab
-cp .env.example .env  # Edit as needed
+## Key Architectural Decisions
 
-# 2. Start infrastructure
-./homelab.sh start
+### Why macvlan Instead of Bridge Networking?
 
-# 3. Verify deployment
-./homelab.sh status
-```
+**Decision**: Use macvlan for direct LAN access instead of Docker bridge + port forwarding
 
-**Result**: Fully functional homelab with monitoring, direct LAN access, and secure container isolation.
+**Rationale**:
+- **No port conflicts**: Each service uses native ports (Grafana on :80, not :3000)
+- **Network simplicity**: Services appear as real devices to router/firewall
+- **External access**: No complex port forwarding rules
+- **Clean URLs**: `http://grafana.home` instead of `http://server:3000`
 
-## Troubleshooting Guides
+**Trade-off**: Host cannot reach containers directly (use `--network host` for testing)
 
-### Network Issues
-```bash
-# Interface detection
-ip route | grep default
+### Why Some Containers Run as Root?
 
-# Network verification
-docker network inspect homelab
+**Decision**: Minimal root usage - only when required for functionality
 
-# Container connectivity
-docker exec service-name ping 192.168.3.1
-```
+**Services requiring root**:
+- **Grafana**: Needs root to bind to port 80
+- **Traefik** (future): Needs root for SSL certificate management
 
-### Security Issues
-```bash
-# Check container users
-docker exec service-name id
+**All others run as non-root**: postgres (uid=999), exporters (uid=65534), etc.
 
-# Verify Docker context
-docker context list
+**Rationale**: Principle of least privilege while maintaining functionality
 
-# Check daemon mode
-docker version | grep -i rootless
-```
+### Why Compose-Managed Networks?
 
-### Monitoring Issues
-```bash
-# Prometheus targets
-curl http://192.168.3.59/targets
+**Decision**: Define macvlan network in compose.yaml instead of manual creation
 
-# Service discovery
-docker logs prometheus | grep discovery
+**Benefits**:
+- **Version controlled**: Network config tracked in git
+- **Portable**: Works across different systems
+- **Auto-detection**: Network interface discovered automatically
+- **Single command**: `docker compose up` handles everything
 
-# Container labels
-docker inspect service-name | jq '.[0].Config.Labels'
-```
+### Why External Configuration Files?
 
-## Future Extensions
+**Decision**: Mount config files from `configs/` instead of environment variables
 
-### Planned Enhancements
-- **SSL/TLS Termination**: Traefik reverse proxy with automatic certificates
-- **Log Aggregation**: ELK stack for centralized logging  
-- **Alerting**: Alertmanager integration with notifications
-- **Backup Automation**: Automated offsite backup with retention
-- **Secret Management**: Docker secrets or external vault integration
-
-### Scaling Patterns
-- **Multi-Host**: Docker Swarm mode for cluster deployment
-- **Load Balancing**: HAProxy for high-availability services
-- **Storage**: Distributed storage with GlusterFS or Ceph
-- **CI/CD**: GitLab or Jenkins for automated deployments
-
-## Service Health Monitoring
-
-### Docker Healthcheck Configuration
-
-All services include comprehensive health monitoring to ensure proper startup sequencing and operational status:
-
-| Service | Health Check Method | Interval | Timeout | Retries | Start Period |
-|---------|-------------------|----------|---------|---------|--------------|
-| **postgres** | `pg_isready -U admin -d default` | 30s | 10s | 3 | 30s |
-| **postgres-backup** | `curl -f http://localhost:8080/` | 5m | 3s | 3 | 30s |
-| **volume-backup** | `ps aux \| grep '[c]rond\|[s]upervisord'` | 60s | 10s | 3 | 30s |
-| **pgadmin** | `wget http://localhost:80/misc/ping` | 30s | 10s | 3 | 60s |
-| **grafana** | `curl -f http://localhost:3000/api/health` | 30s | 10s | 3 | 60s |
-| **prometheus** | `wget http://localhost:80/-/healthy` | 30s | 10s | 3 | 45s |
-| **cadvisor** | `wget http://localhost:80/healthz` | 30s | 10s | 3 | 30s |
-| **postgres-exporter** | `wget http://localhost:9187/metrics` | 30s | 10s | 3 | 30s |
-| **watchtower** | `ps aux \| grep '[w]atchtower'` | 60s | 10s | 3 | 30s |
-| **alertmanager** | `wget http://localhost:80/-/healthy` | 30s | 10s | 3 | 30s |
-| **blackbox-exporter** | `wget http://localhost:80/metrics` | 30s | 10s | 3 | 30s |
-
-### Health Status Monitoring
-
-```bash
-# Check all service health status
-docker compose ps --format 'table {{.Name}}\t{{.Status}}'
-
-# Get detailed health information for specific service
-docker inspect <service-name> --format='{{json .State.Health}}' | jq '.'
-
-# Monitor health checks in real-time
-watch -n 5 "docker compose ps"
-```
-
-### Health Check Benefits
-
-- **Foundation-First Dependencies**: Services start only after dependencies are truly healthy
-- **Automatic Recovery**: Docker restarts unhealthy containers based on restart policies
-- **Operational Visibility**: Clear status indication for troubleshooting
-- **Service Discovery**: Prometheus uses health status for target discovery
+**Rationale**:
+- **Complex configs**: Prometheus rules, Grafana dashboards need structured formats
+- **Version control**: Configuration changes tracked in git
+- **No rebuilds**: Change config without rebuilding images
+- **Validation**: Can validate config syntax before deployment
 
 ## Agent Context Summary
 
 **For AI Agents working on this project:**
 
-1. **Core Architecture**: macvlan networking with layered security model
-2. **Security Principle**: Minimal privileges - most containers run as non-root
-3. **Network Pattern**: Direct LAN IPs (192.168.3.x) for each service
-4. **Configuration Strategy**: External config files in `configs/` directory
-5. **Automation Goal**: Zero manual configuration, auto-detection preferred
-6. **Monitoring Approach**: Prometheus service discovery with container labels
-7. **Management Tool**: `homelab.sh` script for all operations
-8. **Extension Pattern**: Add services to compose.yaml with proper labeling
-9. **Deployment Model**: Single command startup after initial Docker setup
-10. **Troubleshooting**: Use `./homelab.sh status/logs` for diagnostics
+### Core Architectural Decisions
 
-**Key Files:**
+1. **macvlan networking**: Direct LAN IPs, no port forwarding
+2. **Minimal root privileges**: Only Grafana runs as root (port 80 binding)
+3. **External configuration**: Files in `configs/` directory, not env vars
+4. **Health-based dependencies**: Services wait for actual health, not just startup
+5. **Prometheus service discovery**: Auto-discovers containers via labels
+
+### Adding New Services Checklist
+
+- [ ] Assign next available IP in 192.168.3.x range
+- [ ] Add MAC address following pattern in AGENTS.md
+- [ ] Include Prometheus labels for monitoring
+- [ ] Add `depends_on` with health checks if needed
+- [ ] Use external config files for complex configuration
+- [ ] Test with MacVLAN-aware commands (see AGENTS.md)
+
+### Key Files
+
 - `compose.yaml`: Service definitions with macvlan networking
 - `homelab.sh`: Management script with auto-detection
 - `configs/*/`: Service-specific configuration files
-- `.env`: Environment variables and overrides
-- `README.md`: User documentation
-- `ARCHITECTURE.md`: This comprehensive guide
 
-This architecture enables secure, scalable, and maintainable homelab infrastructure with enterprise-grade monitoring and automation capabilities.
+### Testing Reminders
+
+- **MacVLAN isolation**: Host cannot reach containers directly
+- **Use network-aware testing**: `docker run --rm --network host curlimages/curl`
+- **Validate with**: `./homelab.sh status` after changes
+
+This architecture enables secure, maintainable homelab infrastructure with enterprise-grade monitoring and zero-configuration deployment.
