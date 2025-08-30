@@ -127,6 +127,10 @@ Break complex work into 3-5 stages. Document in `IMPLEMENTATION_PLAN.md`:
   - Database schemas/migrations through version-controlled scripts
   - Environment variables for secrets, files for configuration
 
+### Service Dependencies
+
+Always add `depends_on` with health checks for services that rely on other service to work.
+
 ### Error Handling
 
 - Fail fast with descriptive messages
@@ -477,7 +481,7 @@ Support Services (backup, admin tools)
 ```
 
 ### Common Tasks Quick Reference
-- **Add service**: Copy pattern from compose.yaml + update IP range
+- **Add service**: Copy pattern from compose.yaml + update IP range + add `depends_on`
 - **Add dashboard**: Create JSON in `configs/grafana/dashboards/` + restart Grafana
 - **Test change**: `./homelab.sh restart && ./homelab.sh status`
 - **Document**: Create logbook entry for major changes
