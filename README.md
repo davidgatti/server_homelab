@@ -1,6 +1,6 @@
-# Homelab Compose — Fresh-Server Test Harness
+# Homelab Compose
 
-A modern, maintainable approach to home lab infrastructure using Docker Compose.
+This 
 
 ## 🎯 Current Status
 
