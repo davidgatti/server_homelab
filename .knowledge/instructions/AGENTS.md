@@ -6,7 +6,7 @@
 
 1. **Check Latest Logbook Entry**: Review `.knowledge/logbook/` directory for recent changes and current system state
 2. **Read Current Documentation**: Check `.knowledge/instructions/` for architecture and optimization guides  
-3. **Review Expansion Planning**: Check `TODO.md` in project root for planned service additions
+3. **Review Expansion Planning**: Check `.knowledge/TODO.md` for planned service additions
 4. **Verify System Status**: Run `./homelab.sh status` to understand current state
 5. **Document Major Changes**: Create timestamped logbook entries for significant modifications
 
@@ -500,9 +500,9 @@ docker run --rm --network host curlimages/curl:latest \
 
 ### Essential Files (Read in Order)
 1. [`README.md`](../../README.md) - Project overview
-2. [Latest logbook entry](.knowledge/logbook/) - Current state
-3. [`ARCHITECTURE.md`](ARCHITECTURE.md#agent-context-summary) - How it works
-4. [`TODO.md`](../../TODO.md) - What's next
+2. [Latest logbook entry](../logbook/) - Current state
+3. [`ARCHITECTURE.md`](ARCHITECTURE.md) - How it works
+4. [`TODO.md`](../TODO.md) - What's next
 5. [`TESTING.md`](TESTING.md) - How to validate
 
 ### Mental Model

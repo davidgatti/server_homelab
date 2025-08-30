@@ -1,10 +1,10 @@
 # Homelab Compose
 
-This repositry is a centralzied place that codifies the whole HomeLab server. This way there is one soruce of thurght that is easy to edit, track, and test on a different nettwork to make srue any chagens doen will work perfectly in the main HomeLab server.
+This repository is a centralized place that codifies the whole HomeLab server. This way there is one source of thought that is easy to edit, track, and test on a different network to make sure any changes done will work perfectly in the main HomeLab server.
 
-## kKnowledge
+## Knowledge
 
-All the documentation, instructions history is located in the `.knowledge/` folder. This is a none standard location for all the knoledge, but due to AI and the benefit of writing down everything to helpe an Agent understand waht needs to be one, this centralzied folder helps the proejct be easier to read, and more orgaznaied. If you are new, review the content of this folder, it has all the knoledge about this project.
+All the documentation, instructions, and history is located in the `.knowledge/` folder. This is a non-standard location for all the knowledge, but due to AI and the benefit of writing down everything to help an Agent understand what needs to be done, this centralized folder helps the project be easier to read, and more organized. If you are new, review the content of this folder, it has all the knowledge about this project.
 
 
 ## Quick Start
