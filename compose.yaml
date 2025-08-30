@@ -470,8 +470,8 @@ services:
       - redis-data:/data
     networks:
       homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.63
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:3f  # 63 → 0x3F
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.11
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:0b  # 11 → 0x0B
     command:
       - redis-server
       - --appendonly yes
