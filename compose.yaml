@@ -4,6 +4,11 @@ services:
     container_name: postgres
     hostname: postgres
     restart: unless-stopped
+    labels:
+      - "homelab.description=Primary PostgreSQL database server for application data storage"
+      - "homelab.purpose=Relational database with ACID compliance for persistent data storage"
+      - "homelab.category=database"
+      - "homelab.docs=https://www.postgresql.org/docs/"
     environment:
       - TZ=Europe/Rome
       - POSTGRES_USER=admin
@@ -37,6 +42,12 @@ services:
     container_name: watchtower
     hostname: watchtower
     restart: unless-stopped
+    labels:
+      - "homelab.description=Automatic Docker container updater - monitors and updates containers to latest versions"
+      - "homelab.purpose=Container lifecycle management and automated updates scheduled at 4 AM daily"
+      - "homelab.category=automation"
+      - "homelab.schedule=0 0 4 * * * (4 AM daily)"
+      - "homelab.docs=https://containrrr.dev/watchtower/"
     environment:
       - TZ=Europe/Rome
       - WATCHTOWER_CLEANUP=true
@@ -65,6 +76,13 @@ services:
     container_name: postgres-backup
     hostname: pg-backup
     restart: unless-stopped
+    labels:
+      - "homelab.description=Automated PostgreSQL database backup service with retention policies"
+      - "homelab.purpose=Creates compressed daily backups of PostgreSQL databases with rotation"
+      - "homelab.category=backup"
+      - "homelab.schedule=0 2 * * * (2 AM daily)"
+      - "homelab.retention=30 days, 4 weeks, 6 months"
+      - "homelab.docs=https://github.com/prodrigestivill/docker-postgres-backup-local"
     environment:
       - TZ=Europe/Rome
       - POSTGRES_HOST=postgres
@@ -106,6 +124,13 @@ services:
     container_name: volume-backup
     hostname: vol-backup
     restart: unless-stopped
+    labels:
+      - "homelab.description=Docker volume backup service - creates compressed archives of Docker volumes"
+      - "homelab.purpose=Backup Docker volumes and file systems with automated retention management"
+      - "homelab.category=backup"
+      - "homelab.schedule=0 3 * * * (3 AM daily)"
+      - "homelab.retention=30 days"
+      - "homelab.docs=https://github.com/offen/docker-volume-backup"
     environment:
       - TZ=Europe/Rome
       - BACKUP_CRON_EXPRESSION=0 3 * * *
@@ -141,6 +166,12 @@ services:
     container_name: pgadmin
     hostname: pgadmin
     restart: unless-stopped
+    labels:
+      - "homelab.description=Web-based PostgreSQL administration and development platform"
+      - "homelab.purpose=Database management interface for PostgreSQL with query editor and monitoring"
+      - "homelab.category=database-admin"
+      - "homelab.access=admin@example.com / password"
+      - "homelab.docs=https://www.pgadmin.org/docs/"
     environment:
       - TZ=Europe/Rome
       - PGADMIN_DEFAULT_EMAIL=admin@example.com
@@ -176,6 +207,12 @@ services:
     container_name: alertmanager
     hostname: alertmanager
     restart: unless-stopped
+    labels:
+      - "homelab.description=Prometheus alert routing and notification management system"
+      - "homelab.purpose=Handles alerts from Prometheus and routes notifications via email/webhook/etc"
+      - "homelab.category=monitoring"
+      - "homelab.depends=prometheus"
+      - "homelab.docs=https://prometheus.io/docs/alerting/latest/alertmanager/"
     environment:
       - TZ=Europe/Rome
     volumes:
@@ -211,6 +248,12 @@ services:
     container_name: blackbox-exporter
     hostname: blackbox
     restart: unless-stopped
+    labels:
+      - "homelab.description=External service monitoring via HTTP/HTTPS/DNS/TCP/ICMP probes"
+      - "homelab.purpose=Monitor website uptime, API health, and network connectivity from external perspective"
+      - "homelab.category=monitoring"
+      - "homelab.warning=Can generate significant internet traffic if monitoring external sites"
+      - "homelab.docs=https://github.com/prometheus/blackbox_exporter"
     environment:
       - TZ=Europe/Rome
     volumes:
@@ -242,6 +285,13 @@ services:
     container_name: grafana
     hostname: grafana
     restart: unless-stopped
+    labels:
+      - "homelab.description=Data visualization and monitoring dashboard platform"
+      - "homelab.purpose=Create dashboards and visualizations for metrics from Prometheus and logs from Loki"
+      - "homelab.category=monitoring"
+      - "homelab.access=admin / admin"
+      - "homelab.depends=prometheus,loki"
+      - "homelab.docs=https://grafana.com/docs/"
     user: "0"
     environment:
       - TZ=Europe/Rome
@@ -280,6 +330,13 @@ services:
     container_name: prometheus
     hostname: prometheus
     restart: unless-stopped
+    labels:
+      - "homelab.description=Time series database and monitoring system for metrics collection"
+      - "homelab.purpose=Scrapes metrics from exporters, stores time series data, and triggers alerts"
+      - "homelab.category=monitoring"
+      - "homelab.retention=200h (8+ days)"
+      - "homelab.targets=postgres-exporter,redis-exporter,cadvisor,blackbox-exporter"
+      - "homelab.docs=https://prometheus.io/docs/"
     user: "0"
     environment:
       - TZ=Europe/Rome
@@ -323,6 +380,12 @@ services:
     container_name: cadvisor
     hostname: cadvisor
     restart: unless-stopped
+    labels:
+      - "homelab.description=Container resource usage and performance metrics exporter"
+      - "homelab.purpose=Monitors Docker containers CPU, memory, disk, and network usage for Prometheus"
+      - "homelab.category=monitoring"
+      - "homelab.privileged=true (requires system access for container monitoring)"
+      - "homelab.docs=https://github.com/google/cadvisor"
     privileged: true
     devices:
       - /dev/kmsg:/dev/kmsg
@@ -358,6 +421,12 @@ services:
     container_name: postgres-exporter
     hostname: pg-exporter
     restart: unless-stopped
+    labels:
+      - "homelab.description=PostgreSQL metrics exporter for Prometheus monitoring"
+      - "homelab.purpose=Exposes PostgreSQL database metrics: connections, queries, I/O, locks, replication"
+      - "homelab.category=monitoring"
+      - "homelab.depends=postgres"
+      - "homelab.docs=https://github.com/prometheus-community/postgres_exporter"
     environment:
       - TZ=Europe/Rome
       - DATA_SOURCE_NAME=postgresql://admin:password@postgres:5432/default?sslmode=disable
@@ -388,6 +457,13 @@ services:
     container_name: redis
     hostname: redis
     restart: unless-stopped
+    labels:
+      - "homelab.description=In-memory data structure store used as cache and session storage"
+      - "homelab.purpose=High-performance caching layer with persistence for application data"
+      - "homelab.category=cache"
+      - "homelab.memory=256MB max with LRU eviction"
+      - "homelab.persistence=AOF + RDB snapshots"
+      - "homelab.docs=https://redis.io/docs/"
     environment:
       - TZ=Europe/Rome
     volumes:
@@ -425,6 +501,12 @@ services:
     container_name: redis-exporter
     hostname: redis-exporter
     restart: unless-stopped
+    labels:
+      - "homelab.description=Redis metrics exporter for Prometheus monitoring"
+      - "homelab.purpose=Exposes Redis performance metrics: memory usage, commands, connections, keys"
+      - "homelab.category=monitoring"
+      - "homelab.depends=redis"
+      - "homelab.docs=https://github.com/oliver006/redis_exporter"
     environment:
       - TZ=Europe/Rome
       - REDIS_ADDR=redis://redis:6379
@@ -450,12 +532,17 @@ services:
           memory: 25M         # Small guaranteed allocation
           cpus: '0.02'        # 2% CPU minimum
 
-  # Log Management Stack
   loki:
     image: grafana/loki:latest
     container_name: loki
     hostname: loki
     restart: unless-stopped
+    labels:
+      - "homelab.description=Log aggregation system for collecting and indexing application logs"
+      - "homelab.purpose=Centralized log storage and querying backend for Grafana log exploration"
+      - "homelab.category=logging"
+      - "homelab.indexing=Label-based log indexing (like Prometheus for logs)"
+      - "homelab.docs=https://grafana.com/docs/loki/"
     user: "0"
     environment:
       - TZ=Europe/Rome
@@ -487,6 +574,13 @@ services:
     container_name: promtail
     hostname: promtail
     restart: unless-stopped
+    labels:
+      - "homelab.description=Log collection agent that ships Docker container logs to Loki"
+      - "homelab.purpose=Scrapes container logs from Docker daemon and forwards to Loki with labels"
+      - "homelab.category=logging"
+      - "homelab.source=/var/lib/docker/containers (all container logs)"
+      - "homelab.depends=loki"
+      - "homelab.docs=https://grafana.com/docs/loki/latest/clients/promtail/"
     user: "0"
     environment:
       - TZ=Europe/Rome
