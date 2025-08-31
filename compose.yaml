@@ -606,6 +606,51 @@ services:
           memory: 256M        # Guaranteed memory for workflow execution
           cpus: '0.1'         # 10% CPU minimum
 
+  docmost:
+    image: docmost/docmost:latest
+    container_name: docmost
+    hostname: docmost
+    restart: unless-stopped
+    labels:
+      - "homelab.description=Collaborative documentation platform with real-time editing"
+      - "homelab.purpose=Team wiki and knowledge base with markdown support and version control"
+      - "homelab.category=documentation"
+      - "homelab.access=Web UI on port 80"
+      - "homelab.depends=postgres,redis"
+      - "homelab.docs=https://docmost.com/docs/"
+    environment:
+      - TZ=Europe/Rome
+      - DATABASE_URL=postgresql://docmost:docmost_secure_password_2025@postgres:5432/docmost
+      - REDIS_URL=redis://redis:6379
+      - APP_URL=http://${NETWORK_PREFIX:-192.168.5}.17
+      - APP_SECRET=303ddc5b0df7209faa0135bc9f528826d02c0a9d6ce019dd6a267d4b0c3c142a
+      - PORT=80
+    volumes:
+      - docmost-data:/app/data
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.17
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:11  # 17 → 0x11
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 10 bash -c '</dev/tcp/localhost/80' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 512M        # Documentation platform with real-time features
+          cpus: '0.4'         # Moderate CPU for document processing
+        reservations:
+          memory: 256M        # Guaranteed memory for application
+          cpus: '0.1'         # 10% CPU minimum
+
   redis-exporter:
     image: oliver006/redis_exporter:latest
     container_name: redis-exporter
@@ -784,6 +829,8 @@ volumes:
   jellyfin-config:
     driver: local
   jellyfin-cache:
+    driver: local
+  docmost-data:
     driver: local
 
 networks:
