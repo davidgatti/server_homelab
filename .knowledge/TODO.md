@@ -171,3 +171,22 @@
   - **Resource**: ~30MB RAM
   - **Integration**: Feeds Loki
   - **Priority**: ⭐⭐ MEDIUM (With Loki)
+
+## Quake 3 Arena
+
+docker create --name quake3 \
+  --network=homelab \
+  --ip=192.168.3.20 \
+  --mac-address=02:DC:03:00:00:20 \
+  --dns=192.168.1.10 \
+  --hostname quake3 \
+  -e TZ=Europe/Rome \
+  -e SERVER_NAME="My Quake 3 Server" \
+  -e FRONTEND_URL=http://192.168.3.20 \
+  -e BOT_SKILLS=3 \
+  -e MIN_PLAYERS=4 \
+  -e MAX_CLIENTS=16 \
+  -e API_AUTH_USER="admin" \
+  -e API_AUTH_PASSWORD="password" \
+  -v /home/davidgatti/Documents/quake3/pak0.pk3:/home/ioq3srv/ioquake3/baseq3/pak0.pk3:ro \
+  tractr/simple-quake-3-server:latest
