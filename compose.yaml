@@ -554,7 +554,7 @@ services:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.13
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:0d  # 13 → 0x0D
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/health"]
+      test: ["CMD-SHELL", "timeout 10 bash -c '</dev/tcp/localhost/80' || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
