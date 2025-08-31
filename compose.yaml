@@ -838,6 +838,47 @@ services:
       retries: 3
       start_period: 120s
 
+  cups:
+    image: unixorn/cupsd:latest
+    container_name: cups
+    hostname: cups
+    restart: unless-stopped
+    labels:
+      - "homelab.description=Network print server for managing local and network printers"
+      - "homelab.purpose=Centralized printer management with web interface and IPP protocol support"
+      - "homelab.category=printing"
+      - "homelab.access=Web UI on port 80, IPP on port 631"
+      - "homelab.docs=https://www.cups.org/doc/"
+    user: "0"
+    environment:
+      - TZ=Europe/Rome
+    volumes:
+      - cups-config:/etc/cups
+      - cups-logs:/var/log/cups
+      - /var/run/dbus:/var/run/dbus:ro
+      - /etc/machine-id:/etc/machine-id:ro
+    devices:
+      - "/dev/bus/usb:/dev/bus/usb"
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.18
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:12  # 18 → 0x12
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 10 bash -c '</dev/tcp/localhost/631' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+    privileged: true
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.3'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+
 volumes:
   postgres-data:
     driver: local
@@ -870,6 +911,10 @@ volumes:
   docmost-data:
     driver: local
   homeassistant-config:
+    driver: local
+  cups-config:
+    driver: local
+  cups-logs:
     driver: local
 
 networks:
