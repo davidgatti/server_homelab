@@ -801,6 +801,43 @@ services:
           memory: 512M        # Guaranteed memory for media server
           cpus: '0.2'         # 20% CPU minimum for streaming
 
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: homeassistant
+    hostname: homeassistant
+    restart: unless-stopped
+    labels:
+      - "homelab.description=Home automation platform for controlling IoT devices and sensors"
+      - "homelab.purpose=Centralized smart home control with device integration and automation rules"
+      - "homelab.category=automation"
+      - "homelab.access=Web UI on port 80"
+      - "homelab.depends=postgres,redis"
+      - "homelab.features=Device discovery, automation, dashboards, mobile apps"
+      - "homelab.docs=https://www.home-assistant.io/docs/"
+    user: "0"
+    environment:
+      - TZ=Europe/Rome
+    volumes:
+      - homeassistant-config:/config
+      - /run/dbus:/run/dbus:ro
+    devices:
+      - "/dev/bus/usb:/dev/bus/usb"
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.15
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:0f  # 15 → 0x0F
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 10 bash -c '</dev/tcp/localhost/80' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
 volumes:
   postgres-data:
     driver: local
@@ -831,6 +868,8 @@ volumes:
   jellyfin-cache:
     driver: local
   docmost-data:
+    driver: local
+  homeassistant-config:
     driver: local
 
 networks:
