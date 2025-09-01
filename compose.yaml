@@ -1,4 +1,315 @@
 services:
+  speedtest:
+    image: openspeedtest/latest
+    container_name: speedtest
+    hostname: speedtest
+    restart: unless-stopped
+    labels:
+      - "homelab.description=Local network speed test server for bandwidth testing"
+      - "homelab.purpose=Self-hosted speed test to measure network performance without external dependencies"
+      - "homelab.category=network"
+      - "homelab.access=HTTP port 80"
+      - "homelab.docs=https://github.com/openspeedtest/Speed-Test"
+    environment:
+      - TZ=Europe/Rome
+      - CHANGE_CONTAINER_PORTS=True
+      - HTTP_PORT=80
+    volumes:
+      - speedtest-logs:/var/log/letsencrypt
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.10
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:0a  # 10 → 0x0A
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 128M        # Lightweight speed test server
+          cpus: '0.2'         # Can spike during speed tests
+        reservations:
+          memory: 64M         # Small guaranteed allocation
+          cpus: '0.05'        # 5% CPU minimum
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    hostname: redis
+    restart: unless-stopped
+    labels:
+      - "homelab.description=In-memory data structure store used as cache and session storage"
+      - "homelab.purpose=High-performance caching layer with persistence for application data"
+      - "homelab.category=cache"
+      - "homelab.memory=256MB max with LRU eviction"
+      - "homelab.persistence=AOF + RDB snapshots"
+      - "homelab.docs=https://redis.io/docs/"
+    environment:
+      - TZ=Europe/Rome
+    volumes:
+      - redis-data:/data
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.11
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:0b  # 11 → 0x0B
+    command:
+      - redis-server
+      - --appendonly yes
+      - --appendfsync everysec
+      - --save 900 1
+      - --save 300 10
+      - --save 60 10000
+      - --maxmemory 256mb
+      - --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 300M        # Redis with persistence and caching
+          cpus: '0.2'         # Light CPU usage for caching
+        reservations:
+          memory: 100M        # Guaranteed memory for data
+          cpus: '0.05'        # 5% CPU minimum
+
+  qdrant:
+    image: qdrant/qdrant
+    container_name: qdrant
+    hostname: qdrant
+    restart: unless-stopped
+    labels:
+      - "homelab.description=Vector database for AI/ML applications with similarity search capabilities"
+      - "homelab.purpose=High-performance vector storage and search engine for embeddings and neural network outputs"
+      - "homelab.category=database"
+      - "homelab.access=HTTP API port 80, gRPC port 6334"
+      - "homelab.persistence=Persistent vector storage with HNSW indexing"
+      - "homelab.docs=https://qdrant.tech/documentation/"
+    environment:
+      - TZ=Europe/Rome
+      - QDRANT__SERVICE__HTTP_PORT=80
+    volumes:
+      - qdrant-data:/qdrant/storage
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.13
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:0d  # 13 → 0x0D
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 10 bash -c '</dev/tcp/localhost/80' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 512M        # Vector database can be memory intensive
+          cpus: '0.5'         # Vector operations can be CPU intensive
+        reservations:
+          memory: 256M        # Guaranteed memory for vector storage
+          cpus: '0.1'         # 10% CPU minimum
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    hostname: n8n
+    restart: unless-stopped
+    labels:
+      - "homelab.description=Workflow automation platform for connecting apps and services"
+      - "homelab.purpose=Low-code/no-code automation tool for integrating various APIs and services"
+      - "homelab.category=automation"
+      - "homelab.access=Web UI on port 80"
+      - "homelab.features=Visual workflow builder, API integrations, scheduling, webhooks"
+      - "homelab.docs=https://docs.n8n.io/"
+    environment:
+      - TZ=Europe/Rome
+      - GENERIC_TIMEZONE=Europe/Rome
+      - N8N_SECURE_COOKIE=false
+      - N8N_PORT=80
+    volumes:
+      - n8n-data:/home/node/.n8n
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.14
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:0e  # 14 → 0x0E
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+    deploy:
+      resources:
+        limits:
+          memory: 512M        # n8n can be memory intensive with complex workflows
+          cpus: '0.4'         # Workflow execution can be CPU intensive
+        reservations:
+          memory: 256M        # Guaranteed memory for workflow execution
+          cpus: '0.1'         # 10% CPU minimum
+
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: homeassistant
+    hostname: homeassistant
+    restart: unless-stopped
+    labels:
+      - "homelab.description=Home automation platform for controlling IoT devices and sensors"
+      - "homelab.purpose=Centralized smart home control with device integration and automation rules"
+      - "homelab.category=automation"
+      - "homelab.access=Web UI on port 80"
+      - "homelab.depends=postgres,redis"
+      - "homelab.features=Device discovery, automation, dashboards, mobile apps"
+      - "homelab.docs=https://www.home-assistant.io/docs/"
+    user: "0"
+    environment:
+      - TZ=Europe/Rome
+    volumes:
+      - homeassistant-config:/config
+      - /run/dbus:/run/dbus:ro
+    devices:
+      - "/dev/bus/usb:/dev/bus/usb"
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.15
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:0f  # 15 → 0x0F
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fL", "http://localhost"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+      start_period: 30s
+
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    hostname: jellyfin
+    restart: unless-stopped
+    labels:
+      - "homelab.description=Media server for streaming movies, TV shows, music, and photos"
+      - "homelab.purpose=Self-hosted media streaming platform with transcoding and remote access"
+      - "homelab.category=media"
+      - "homelab.access=Web UI on port 8096"
+      - "homelab.features=Hardware transcoding, DLNA/UPnP, mobile apps, live TV"
+      - "homelab.storage=/mnt/nas_media (read-only media library)"
+      - "homelab.docs=https://jellyfin.org/docs/"
+    environment:
+      - TZ=Europe/Rome
+      - JELLYFIN_PublishedServerUrl=http://192.168.5.16:8096
+    volumes:
+      - /mnt/nas_media:/media:ro
+      - jellyfin-config:/config
+      - jellyfin-cache:/cache
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.16
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:10  # 16 → 0x10
+    # No healthcheck as per production configuration
+    deploy:
+      resources:
+        limits:
+          memory: 2G          # Media transcoding can be memory intensive
+          cpus: '1.0'         # Hardware transcoding benefits from CPU allocation
+        reservations:
+          memory: 512M        # Guaranteed memory for media server
+          cpus: '0.2'         # 20% CPU minimum for streaming
+
+  docmost:
+    image: docmost/docmost:latest
+    container_name: docmost
+    hostname: docmost
+    restart: unless-stopped
+    labels:
+      - "homelab.description=Collaborative documentation platform with real-time editing"
+      - "homelab.purpose=Team wiki and knowledge base with markdown support and version control"
+      - "homelab.category=documentation"
+      - "homelab.access=Web UI on port 80"
+      - "homelab.depends=postgres,redis"
+      - "homelab.docs=https://docmost.com/docs/"
+    environment:
+      - TZ=Europe/Rome
+      - DATABASE_URL=postgresql://docmost:docmost_secure_password_2025@postgres:5432/docmost
+      - REDIS_URL=redis://redis:6379
+      - APP_URL=http://${NETWORK_PREFIX:-192.168.5}.17
+      - APP_SECRET=303ddc5b0df7209faa0135bc9f528826d02c0a9d6ce019dd6a267d4b0c3c142a
+      - PORT=80
+    volumes:
+      - docmost-data:/app/data
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.17
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:11  # 17 → 0x11
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 10 bash -c '</dev/tcp/localhost/80' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 512M        # Documentation platform with real-time features
+          cpus: '0.4'         # Moderate CPU for document processing
+        reservations:
+          memory: 256M        # Guaranteed memory for application
+          cpus: '0.1'         # 10% CPU minimum
+
+  cups:
+    image: unixorn/cupsd:latest
+    container_name: cups
+    hostname: cups
+    restart: unless-stopped
+    labels:
+      - "homelab.description=Network print server for managing local and network printers"
+      - "homelab.purpose=Centralized printer management with web interface and IPP protocol support"
+      - "homelab.category=printing"
+      - "homelab.access=Web UI on port 80, IPP on port 631"
+      - "homelab.docs=https://www.cups.org/doc/"
+    user: "0"
+    environment:
+      - TZ=Europe/Rome
+    volumes:
+      - cups-config:/etc/cups
+      - cups-logs:/var/log/cups
+      - /var/run/dbus:/var/run/dbus:ro
+      - /etc/machine-id:/etc/machine-id:ro
+    devices:
+      - "/dev/bus/usb:/dev/bus/usb"
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.18
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:12  # 18 → 0x12
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 10 bash -c '</dev/tcp/localhost/631' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+    privileged: true
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.3'
+        reservations:
+          memory: 128M
+          cpus: '0.1'
+
   postgres:
     image: postgres:latest
     container_name: postgres
@@ -119,6 +430,47 @@ services:
           memory: 128M        # Guaranteed for basic operations
           cpus: '0.1'         # 10% CPU minimum
 
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    hostname: alertmanager
+    restart: unless-stopped
+    labels:
+      - "homelab.description=Prometheus alert routing and notification management system"
+      - "homelab.purpose=Handles alerts from Prometheus and routes notifications via email/webhook/etc"
+      - "homelab.category=monitoring"
+      - "homelab.depends=prometheus"
+      - "homelab.docs=https://prometheus.io/docs/alerting/latest/alertmanager/"
+    environment:
+      - TZ=Europe/Rome
+    volumes:
+      - alertmanager-data:/alertmanager
+      - ./configs/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.56
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:38  # 56 → 0x38
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--web.external-url=http://${NETWORK_PREFIX:-192.168.5}.56'
+      - '--web.listen-address=0.0.0.0:80'
+      - '--cluster.listen-address=0.0.0.0:9094'
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 200M        # AlertManager for notifications
+          cpus: '0.2'         # Light alerting service
+        reservations:
+          memory: 100M        # Reasonable guarantee
+          cpus: '0.05'        # Minimal CPU when idle
+
   volume-backup:
     image: offen/docker-volume-backup:latest
     container_name: volume-backup
@@ -202,129 +554,6 @@ services:
           memory: 150M        # Reasonable guarantee
           cpus: '0.05'        # Minimal CPU when idle
 
-  alertmanager:
-    image: prom/alertmanager:latest
-    container_name: alertmanager
-    hostname: alertmanager
-    restart: unless-stopped
-    labels:
-      - "homelab.description=Prometheus alert routing and notification management system"
-      - "homelab.purpose=Handles alerts from Prometheus and routes notifications via email/webhook/etc"
-      - "homelab.category=monitoring"
-      - "homelab.depends=prometheus"
-      - "homelab.docs=https://prometheus.io/docs/alerting/latest/alertmanager/"
-    environment:
-      - TZ=Europe/Rome
-    volumes:
-      - alertmanager-data:/alertmanager
-      - ./configs/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
-    networks:
-      homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.56
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:38  # 56 → 0x38
-    command:
-      - '--config.file=/etc/alertmanager/alertmanager.yml'
-      - '--storage.path=/alertmanager'
-      - '--web.external-url=http://${NETWORK_PREFIX:-192.168.5}.56'
-      - '--web.listen-address=0.0.0.0:80'
-      - '--cluster.listen-address=0.0.0.0:9094'
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/-/healthy"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    deploy:
-      resources:
-        limits:
-          memory: 200M        # AlertManager for notifications
-          cpus: '0.2'         # Light alerting service
-        reservations:
-          memory: 100M        # Reasonable guarantee
-          cpus: '0.05'        # Minimal CPU when idle
-
-  blackbox-exporter:
-    image: prom/blackbox-exporter:latest
-    container_name: blackbox-exporter
-    hostname: blackbox
-    restart: unless-stopped
-    labels:
-      - "homelab.description=External service monitoring via HTTP/HTTPS/DNS/TCP/ICMP probes"
-      - "homelab.purpose=Monitor website uptime, API health, and network connectivity from external perspective"
-      - "homelab.category=monitoring"
-      - "homelab.warning=Can generate significant internet traffic if monitoring external sites"
-      - "homelab.docs=https://github.com/prometheus/blackbox_exporter"
-    environment:
-      - TZ=Europe/Rome
-    volumes:
-      - ./configs/blackbox/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
-    command:
-      - '--web.listen-address=0.0.0.0:80'
-      - '--config.file=/etc/blackbox_exporter/config.yml'
-    networks:
-      homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.61
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:3d  # 61 → 0x3D
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/metrics"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    deploy:
-      resources:
-        limits:
-          memory: 100M        # Lightweight HTTP/TCP/DNS prober
-          cpus: '0.1'         # Minimal CPU for periodic checks
-        reservations:
-          memory: 50M         # Small guaranteed allocation
-          cpus: '0.02'        # 2% CPU minimum
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    hostname: grafana
-    restart: unless-stopped
-    labels:
-      - "homelab.description=Data visualization and monitoring dashboard platform"
-      - "homelab.purpose=Create dashboards and visualizations for metrics from Prometheus and logs from Loki"
-      - "homelab.category=monitoring"
-      - "homelab.access=admin / admin"
-      - "homelab.depends=prometheus,loki"
-      - "homelab.docs=https://grafana.com/docs/"
-    user: "0"
-    environment:
-      - TZ=Europe/Rome
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-      - GF_METRICS_ENABLED=true
-      - GF_SERVER_HTTP_PORT=80
-    volumes:
-      - grafana-data:/var/lib/grafana
-      - ./configs/grafana/grafana.ini:/etc/grafana/grafana.ini:ro
-      - ./configs/grafana/provisioning:/etc/grafana/provisioning:ro
-      - ./configs/grafana/dashboards:/etc/grafana/dashboards:ro
-    networks:
-      homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.60
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:3c  # 60 → 0x3C
-    depends_on:
-      prometheus:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-    deploy:
-      resources:
-        limits:
-          memory: 400M        # Grafana for HomeLab dashboards
-          cpus: '0.4'         # Can be CPU intensive with complex dashboards
-        reservations:
-          memory: 200M        # Reasonable guarantee for web interface
-          cpus: '0.1'         # 10% CPU minimum
-
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
@@ -374,6 +603,88 @@ services:
         reservations:
           memory: 250M        # Guaranteed for metrics storage
           cpus: '0.15'        # 15% CPU minimum
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    hostname: grafana
+    restart: unless-stopped
+    labels:
+      - "homelab.description=Data visualization and monitoring dashboard platform"
+      - "homelab.purpose=Create dashboards and visualizations for metrics from Prometheus and logs from Loki"
+      - "homelab.category=monitoring"
+      - "homelab.access=admin / admin"
+      - "homelab.depends=prometheus,loki"
+      - "homelab.docs=https://grafana.com/docs/"
+    user: "0"
+    environment:
+      - TZ=Europe/Rome
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_METRICS_ENABLED=true
+      - GF_SERVER_HTTP_PORT=80
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./configs/grafana/grafana.ini:/etc/grafana/grafana.ini:ro
+      - ./configs/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./configs/grafana/dashboards:/etc/grafana/dashboards:ro
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.60
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:3c  # 60 → 0x3C
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 400M        # Grafana for HomeLab dashboards
+          cpus: '0.4'         # Can be CPU intensive with complex dashboards
+        reservations:
+          memory: 200M        # Reasonable guarantee for web interface
+          cpus: '0.1'         # 10% CPU minimum
+
+  blackbox-exporter:
+    image: prom/blackbox-exporter:latest
+    container_name: blackbox-exporter
+    hostname: blackbox
+    restart: unless-stopped
+    labels:
+      - "homelab.description=External service monitoring via HTTP/HTTPS/DNS/TCP/ICMP probes"
+      - "homelab.purpose=Monitor website uptime, API health, and network connectivity from external perspective"
+      - "homelab.category=monitoring"
+      - "homelab.warning=Can generate significant internet traffic if monitoring external sites"
+      - "homelab.docs=https://github.com/prometheus/blackbox_exporter"
+    environment:
+      - TZ=Europe/Rome
+    volumes:
+      - ./configs/blackbox/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
+    command:
+      - '--web.listen-address=0.0.0.0:80'
+      - '--config.file=/etc/blackbox_exporter/config.yml'
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.61
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:3d  # 61 → 0x3D
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 100M        # Lightweight HTTP/TCP/DNS prober
+          cpus: '0.1'         # Minimal CPU for periodic checks
+        reservations:
+          memory: 50M         # Small guaranteed allocation
+          cpus: '0.02'        # 2% CPU minimum
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
@@ -451,205 +762,6 @@ services:
         reservations:
           memory: 50M         # Small guaranteed allocation
           cpus: '0.02'        # 2% CPU minimum
-
-  redis:
-    image: redis:latest
-    container_name: redis
-    hostname: redis
-    restart: unless-stopped
-    labels:
-      - "homelab.description=In-memory data structure store used as cache and session storage"
-      - "homelab.purpose=High-performance caching layer with persistence for application data"
-      - "homelab.category=cache"
-      - "homelab.memory=256MB max with LRU eviction"
-      - "homelab.persistence=AOF + RDB snapshots"
-      - "homelab.docs=https://redis.io/docs/"
-    environment:
-      - TZ=Europe/Rome
-    volumes:
-      - redis-data:/data
-    networks:
-      homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.11
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:0b  # 11 → 0x0B
-    command:
-      - redis-server
-      - --appendonly yes
-      - --appendfsync everysec
-      - --save 900 1
-      - --save 300 10
-      - --save 60 10000
-      - --maxmemory 256mb
-      - --maxmemory-policy allkeys-lru
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
-    deploy:
-      resources:
-        limits:
-          memory: 300M        # Redis with persistence and caching
-          cpus: '0.2'         # Light CPU usage for caching
-        reservations:
-          memory: 100M        # Guaranteed memory for data
-          cpus: '0.05'        # 5% CPU minimum
-
-  speedtest:
-    image: openspeedtest/latest
-    container_name: speedtest
-    hostname: speedtest
-    restart: unless-stopped
-    labels:
-      - "homelab.description=Local network speed test server for bandwidth testing"
-      - "homelab.purpose=Self-hosted speed test to measure network performance without external dependencies"
-      - "homelab.category=network"
-      - "homelab.access=HTTP port 80"
-      - "homelab.docs=https://github.com/openspeedtest/Speed-Test"
-    environment:
-      - TZ=Europe/Rome
-      - CHANGE_CONTAINER_PORTS=True
-      - HTTP_PORT=80
-    volumes:
-      - speedtest-logs:/var/log/letsencrypt
-    networks:
-      homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.10
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:0a  # 10 → 0x0A
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    deploy:
-      resources:
-        limits:
-          memory: 128M        # Lightweight speed test server
-          cpus: '0.2'         # Can spike during speed tests
-        reservations:
-          memory: 64M         # Small guaranteed allocation
-          cpus: '0.05'        # 5% CPU minimum
-
-  qdrant:
-    image: qdrant/qdrant
-    container_name: qdrant
-    hostname: qdrant
-    restart: unless-stopped
-    labels:
-      - "homelab.description=Vector database for AI/ML applications with similarity search capabilities"
-      - "homelab.purpose=High-performance vector storage and search engine for embeddings and neural network outputs"
-      - "homelab.category=database"
-      - "homelab.access=HTTP API port 80, gRPC port 6334"
-      - "homelab.persistence=Persistent vector storage with HNSW indexing"
-      - "homelab.docs=https://qdrant.tech/documentation/"
-    environment:
-      - TZ=Europe/Rome
-      - QDRANT__SERVICE__HTTP_PORT=80
-    volumes:
-      - qdrant-data:/qdrant/storage
-    networks:
-      homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.13
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:0d  # 13 → 0x0D
-    healthcheck:
-      test: ["CMD-SHELL", "timeout 10 bash -c '</dev/tcp/localhost/80' || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    deploy:
-      resources:
-        limits:
-          memory: 512M        # Vector database can be memory intensive
-          cpus: '0.5'         # Vector operations can be CPU intensive
-        reservations:
-          memory: 256M        # Guaranteed memory for vector storage
-          cpus: '0.1'         # 10% CPU minimum
-
-  n8n:
-    image: n8nio/n8n:latest
-    container_name: n8n
-    hostname: n8n
-    restart: unless-stopped
-    labels:
-      - "homelab.description=Workflow automation platform for connecting apps and services"
-      - "homelab.purpose=Low-code/no-code automation tool for integrating various APIs and services"
-      - "homelab.category=automation"
-      - "homelab.access=Web UI on port 80"
-      - "homelab.features=Visual workflow builder, API integrations, scheduling, webhooks"
-      - "homelab.docs=https://docs.n8n.io/"
-    environment:
-      - TZ=Europe/Rome
-      - GENERIC_TIMEZONE=Europe/Rome
-      - N8N_SECURE_COOKIE=false
-      - N8N_PORT=80
-    volumes:
-      - n8n-data:/home/node/.n8n
-    networks:
-      homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.14
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:0e  # 14 → 0x0E
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/healthz"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 45s
-    deploy:
-      resources:
-        limits:
-          memory: 512M        # n8n can be memory intensive with complex workflows
-          cpus: '0.4'         # Workflow execution can be CPU intensive
-        reservations:
-          memory: 256M        # Guaranteed memory for workflow execution
-          cpus: '0.1'         # 10% CPU minimum
-
-  docmost:
-    image: docmost/docmost:latest
-    container_name: docmost
-    hostname: docmost
-    restart: unless-stopped
-    labels:
-      - "homelab.description=Collaborative documentation platform with real-time editing"
-      - "homelab.purpose=Team wiki and knowledge base with markdown support and version control"
-      - "homelab.category=documentation"
-      - "homelab.access=Web UI on port 80"
-      - "homelab.depends=postgres,redis"
-      - "homelab.docs=https://docmost.com/docs/"
-    environment:
-      - TZ=Europe/Rome
-      - DATABASE_URL=postgresql://docmost:docmost_secure_password_2025@postgres:5432/docmost
-      - REDIS_URL=redis://redis:6379
-      - APP_URL=http://${NETWORK_PREFIX:-192.168.5}.17
-      - APP_SECRET=303ddc5b0df7209faa0135bc9f528826d02c0a9d6ce019dd6a267d4b0c3c142a
-      - PORT=80
-    volumes:
-      - docmost-data:/app/data
-    networks:
-      homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.17
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:11  # 17 → 0x11
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "timeout 10 bash -c '</dev/tcp/localhost/80' || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-    deploy:
-      resources:
-        limits:
-          memory: 512M        # Documentation platform with real-time features
-          cpus: '0.4'         # Moderate CPU for document processing
-        reservations:
-          memory: 256M        # Guaranteed memory for application
-          cpus: '0.1'         # 10% CPU minimum
 
   redis-exporter:
     image: oliver006/redis_exporter:latest
@@ -766,118 +878,6 @@ services:
         reservations:
           memory: 30M         # Small guaranteed allocation
           cpus: '0.02'        # 2% CPU minimum
-
-  jellyfin:
-    image: jellyfin/jellyfin:latest
-    container_name: jellyfin
-    hostname: jellyfin
-    restart: unless-stopped
-    labels:
-      - "homelab.description=Media server for streaming movies, TV shows, music, and photos"
-      - "homelab.purpose=Self-hosted media streaming platform with transcoding and remote access"
-      - "homelab.category=media"
-      - "homelab.access=Web UI on port 8096"
-      - "homelab.features=Hardware transcoding, DLNA/UPnP, mobile apps, live TV"
-      - "homelab.storage=/mnt/nas_media (read-only media library)"
-      - "homelab.docs=https://jellyfin.org/docs/"
-    environment:
-      - TZ=Europe/Rome
-      - JELLYFIN_PublishedServerUrl=http://192.168.5.16:8096
-    volumes:
-      - /mnt/nas_media:/media:ro
-      - jellyfin-config:/config
-      - jellyfin-cache:/cache
-    networks:
-      homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.16
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:10  # 16 → 0x10
-    # No healthcheck as per production configuration
-    deploy:
-      resources:
-        limits:
-          memory: 2G          # Media transcoding can be memory intensive
-          cpus: '1.0'         # Hardware transcoding benefits from CPU allocation
-        reservations:
-          memory: 512M        # Guaranteed memory for media server
-          cpus: '0.2'         # 20% CPU minimum for streaming
-
-  homeassistant:
-    image: ghcr.io/home-assistant/home-assistant:stable
-    container_name: homeassistant
-    hostname: homeassistant
-    restart: unless-stopped
-    labels:
-      - "homelab.description=Home automation platform for controlling IoT devices and sensors"
-      - "homelab.purpose=Centralized smart home control with device integration and automation rules"
-      - "homelab.category=automation"
-      - "homelab.access=Web UI on port 80"
-      - "homelab.depends=postgres,redis"
-      - "homelab.features=Device discovery, automation, dashboards, mobile apps"
-      - "homelab.docs=https://www.home-assistant.io/docs/"
-    user: "0"
-    environment:
-      - TZ=Europe/Rome
-    volumes:
-      - homeassistant-config:/config
-      - /run/dbus:/run/dbus:ro
-    devices:
-      - "/dev/bus/usb:/dev/bus/usb"
-    networks:
-      homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.15
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:0f  # 15 → 0x0F
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-fL", "http://localhost"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
-      start_period: 30s
-
-  cups:
-    image: unixorn/cupsd:latest
-    container_name: cups
-    hostname: cups
-    restart: unless-stopped
-    labels:
-      - "homelab.description=Network print server for managing local and network printers"
-      - "homelab.purpose=Centralized printer management with web interface and IPP protocol support"
-      - "homelab.category=printing"
-      - "homelab.access=Web UI on port 80, IPP on port 631"
-      - "homelab.docs=https://www.cups.org/doc/"
-    user: "0"
-    environment:
-      - TZ=Europe/Rome
-    volumes:
-      - cups-config:/etc/cups
-      - cups-logs:/var/log/cups
-      - /var/run/dbus:/var/run/dbus:ro
-      - /etc/machine-id:/etc/machine-id:ro
-    devices:
-      - "/dev/bus/usb:/dev/bus/usb"
-    networks:
-      homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.18
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:12  # 18 → 0x12
-    healthcheck:
-      test: ["CMD-SHELL", "timeout 10 bash -c '</dev/tcp/localhost/631' || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 45s
-    privileged: true
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-          cpus: '0.3'
-        reservations:
-          memory: 128M
-          cpus: '0.1'
 
 volumes:
   postgres-data:
