@@ -117,8 +117,6 @@
 	},
 	"extensions": {
 		"recommendations": [
-			"ms-azuretools.vscode-docker",
-			"redhat.vscode-yaml",
 			"ms-vscode.vscode-json",
 			"ms-vscode-remote.remote-containers",
 			"timonwong.shellcheck",
