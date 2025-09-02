@@ -98,7 +98,7 @@ services:
       - qdrant-data:/qdrant/storage
     networks:
       homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.13
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.12
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:0d  # 13 → 0x0D
     healthcheck:
       test: ["CMD-SHELL", "timeout 10 bash -c '</dev/tcp/localhost/80' || exit 1"]
@@ -136,7 +136,7 @@ services:
       - n8n-data:/home/node/.n8n
     networks:
       homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.14
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.13
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:0e  # 14 → 0x0E
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/healthz"]
@@ -176,7 +176,7 @@ services:
       - "/dev/bus/usb:/dev/bus/usb"
     networks:
       homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.15
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.14
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:0f  # 15 → 0x0F
     depends_on:
       postgres:
@@ -205,14 +205,14 @@ services:
       - "homelab.docs=https://jellyfin.org/docs/"
     environment:
       - TZ=Europe/Rome
-      - JELLYFIN_PublishedServerUrl=http://192.168.5.16:8096
+      - JELLYFIN_PublishedServerUrl=http://192.168.5.15:8096
     volumes:
       - /mnt/nas_media:/media:ro
       - jellyfin-config:/config
       - jellyfin-cache:/cache
     networks:
       homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.16
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.15
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:10  # 16 → 0x10
     # No healthcheck as per production configuration
     deploy:
@@ -247,7 +247,7 @@ services:
       - docmost-data:/app/data
     networks:
       homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.17
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.16
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:11  # 17 → 0x11
     depends_on:
       postgres:
@@ -292,7 +292,7 @@ services:
       - "/dev/bus/usb:/dev/bus/usb"
     networks:
       homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.18
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.17
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:12  # 18 → 0x12
     healthcheck:
       test: ["CMD-SHELL", "timeout 10 bash -c '</dev/tcp/localhost/631' || exit 1"]
@@ -330,7 +330,7 @@ services:
       - postgres-data:/var/lib/postgresql/data
     networks:
       homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.53
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.18
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:35  # 53 → 0x35
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U admin -d default"]
@@ -371,7 +371,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.54
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.19
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:36  # 54 → 0x36
     deploy:
       resources:
@@ -410,7 +410,7 @@ services:
       - postgres-backup-data:/backups
     networks:
       homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.55
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.20
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:37  # 55 → 0x37
     depends_on:
       postgres:
@@ -448,12 +448,12 @@ services:
       - ./configs/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
     networks:
       homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.56
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.21
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:38  # 56 → 0x38
     command:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
       - '--storage.path=/alertmanager'
-      - '--web.external-url=http://${NETWORK_PREFIX:-192.168.5}.56'
+      - '--web.external-url=http://${NETWORK_PREFIX:-192.168.5}.21'
       - '--web.listen-address=0.0.0.0:80'
       - '--cluster.listen-address=0.0.0.0:9094'
     healthcheck:
@@ -496,7 +496,7 @@ services:
       - /opt/homelab/backups/volumes:/archive
     networks:
       homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.57
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.22
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:39  # 57 → 0x39
     healthcheck:
       test: ["CMD", "pgrep", "-f", "backup"]
@@ -534,7 +534,7 @@ services:
       - pgadmin-data:/var/lib/pgadmin
     networks:
       homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.58
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.23
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:3a  # 58 → 0x3A
     depends_on:
       postgres:
@@ -584,7 +584,7 @@ services:
       - '--web.enable-lifecycle'
     networks:
       homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.59
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.24
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:3b  # 59 → 0x3B
     depends_on:
       postgres-exporter:
@@ -629,7 +629,7 @@ services:
       - ./configs/grafana/dashboards:/etc/grafana/dashboards:ro
     networks:
       homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.60
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.25
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:3c  # 60 → 0x3C
     depends_on:
       prometheus:
@@ -669,7 +669,7 @@ services:
       - '--config.file=/etc/blackbox_exporter/config.yml'
     networks:
       homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.61
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.26
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:3d  # 61 → 0x3D
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/metrics"]
@@ -710,7 +710,7 @@ services:
       - '--port=80'
     networks:
       homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.62
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.27
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:3e  # 62 → 0x3E
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/healthz"]
@@ -743,7 +743,7 @@ services:
       - DATA_SOURCE_NAME=postgresql://admin:password@postgres:5432/default?sslmode=disable
     networks:
       homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.64
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.28
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:40  # 64 → 0x40
     depends_on:
       postgres:
@@ -779,7 +779,7 @@ services:
       - REDIS_ADDR=redis://redis:6379
     networks:
       homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.65
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.29
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:41  # 65 → 0x41
     depends_on:
       redis:
@@ -819,7 +819,7 @@ services:
     command: -config.file=/etc/loki/local-config.yaml
     networks:
       homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.66
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.30
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:42  # 66 → 0x42
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1"]
@@ -859,7 +859,7 @@ services:
     command: -config.file=/etc/promtail/config.yml
     networks:
       homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.67
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.31
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:43  # 67 → 0x43
     depends_on:
       loki:

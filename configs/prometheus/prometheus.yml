@@ -10,7 +10,7 @@ alerting:
   alertmanagers:
     - static_configs:
         - targets:
-          - "192.168.5.56:80"
+          - "192.168.5.21:80"
 
 # Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
 rule_files:
@@ -23,36 +23,36 @@ scrape_configs:
 
   - job_name: 'alertmanager'
     static_configs:
-      - targets: ['192.168.5.56:80']
+      - targets: ['192.168.5.21:80']
     metrics_path: '/metrics'
 
   - job_name: 'grafana'
     static_configs:
-      - targets: ['192.168.5.60:80']
+      - targets: ['192.168.5.25:80']
     metrics_path: '/metrics'
 
   # cAdvisor for Docker container metrics
   - job_name: 'cadvisor'
     static_configs:
-      - targets: ['192.168.5.62:80']
+      - targets: ['192.168.5.27:80']
     metrics_path: '/metrics'
 
   # Postgres exporter for database metrics
   - job_name: 'postgres-exporter'
     static_configs:
-      - targets: ['192.168.5.64:9187']
+      - targets: ['192.168.5.28:9187']
     metrics_path: '/metrics'
 
   # Blackbox exporter metrics endpoint
   - job_name: 'blackbox-exporter'
     static_configs:
-      - targets: ['192.168.5.61:80']
+      - targets: ['192.168.5.26:80']
     metrics_path: '/metrics'
 
   # Redis server metrics via redis_exporter
   - job_name: 'redis-exporter'
     static_configs:
-      - targets: ['192.168.5.65:9121']
+      - targets: ['192.168.5.29:9121']
     metrics_path: '/metrics'
     scrape_interval: 30s
 
@@ -73,7 +73,7 @@ scrape_configs:
       - source_labels: [__param_target]
         target_label: instance
       - target_label: __address__
-        replacement: 192.168.5.61:80  # Blackbox exporter address
+        replacement: 192.168.5.26:80  # Blackbox exporter address
 
   # Internal service monitoring via Blackbox Exporter
   - job_name: 'blackbox-internal'
@@ -82,32 +82,32 @@ scrape_configs:
       module: [http_2xx]
     static_configs:
       - targets:
-        - http://192.168.5.60  # Grafana
-        - http://192.168.5.59  # Prometheus
-        - http://192.168.5.56  # AlertManager
-        - http://192.168.5.58  # pgAdmin
-        - http://192.168.5.62  # cAdvisor
-        - http://192.168.5.66  # Loki
-        - http://192.168.5.67  # Promtail
+        - http://192.168.5.25  # Grafana
+        - http://192.168.5.24  # Prometheus
+        - http://192.168.5.21  # AlertManager
+        - http://192.168.5.23  # pgAdmin
+        - http://192.168.5.27  # cAdvisor
+        - http://192.168.5.30  # Loki
+        - http://192.168.5.31  # Promtail
         - http://192.168.5.10  # OpenSpeedtest
-        - http://192.168.5.13  # Qdrant
-        - http://192.168.5.14  # n8n
-        - http://192.168.5.16:8096  # Jellyfin
+        - http://192.168.5.12  # Qdrant
+        - http://192.168.5.13  # n8n
+        - http://192.168.5.15:8096  # Jellyfin
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
       - source_labels: [__param_target]
         target_label: instance
       - target_label: __address__
-        replacement: 192.168.5.61:80
+        replacement: 192.168.5.26:80
 
   # Log Management Stack
   - job_name: 'loki'
     static_configs:
-      - targets: ['192.168.5.66:3100']
+      - targets: ['192.168.5.30:3100']
     metrics_path: '/metrics'
 
   - job_name: 'promtail'
     static_configs:
-      - targets: ['192.168.5.67:9080']
+      - targets: ['192.168.5.31:9080']
     metrics_path: '/metrics'

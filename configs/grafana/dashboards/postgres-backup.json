@@ -158,7 +158,7 @@
             "type": "prometheus"
           },
           "editorMode": "code",
-          "expr": "up{instance=\"192.168.5.55:8080\"}",
+          "expr": "up{instance=\"192.168.5.20:8080\"}",
           "instant": false,
           "legendFormat": "Health Status",
           "range": true,

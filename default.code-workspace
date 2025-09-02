@@ -114,14 +114,5 @@
 	"launch": {
 		"version": "0.2.0",
 		"configurations": []
-	},
-	"extensions": {
-		"recommendations": [
-			"ms-vscode.vscode-json",
-			"ms-vscode-remote.remote-containers",
-			"timonwong.shellcheck",
-			"foxundermoon.shell-format",
-			"ms-vscode.makefile-tools"
-		]
 	}
 }
