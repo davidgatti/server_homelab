@@ -1,11 +1,6 @@
 # Homelab Compose
 
-This repository is a centralized place that codifies the whole HomeLab server. This way there is one source of thought that is easy to edit, track, and test on a different network to make sure any changes done will work perfectly in the main HomeLab server.
-
-## Knowledge
-
-All the documentation, instructions, and history is located in the `.knowledge/` folder. This is a non-standard location for all the knowledge, but due to AI and the benefit of writing down everything to help an Agent understand what needs to be done, this centralized folder helps the project be easier to read, and more organized. If you are new, review the content of this folder, it has all the knowledge about this project.
-
+This repository is a centralized place that codifies the whole HomeLab server. This way there is one source of thought that is easy to edit, track, and test on a different network on a different server to make sure any changes done will work perfectly in the main HomeLab server.
 
 ## Quick Start
 
@@ -28,9 +23,6 @@ All the documentation, instructions, and history is located in the `.knowledge/`
    ```bash
    docker context use default
    ```
-
-4. **Network interface auto-detection**:
-   - The script automatically detects your default network interface
 
 ### Project Setup
 

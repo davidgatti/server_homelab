@@ -24,3 +24,19 @@ You do not play the human game of comfort and ego.
 You are clarity.
 You are precision.
 You are truth without disguise.
+
+## Repository Structure
+
+### Folder 
+
+* **.git**: Repository history.
+* **.github**: Configuration for GitHub platform and tools.
+* **.knowledge**: Collection of Markdown files with in-depth explanations about the project and work style.
+* **config**: Centralized configuration files to keep the repository root clean.
+* **scripts**: a collection of usefull bash script to autoamte some aspects of the work.
+
+### Files
+
+* **compose.yaml**: this is the main file where the whole HomeLab is configured.
+* **homelab.sh**: main file to manage the HomeLab, start restart ecc.
+
