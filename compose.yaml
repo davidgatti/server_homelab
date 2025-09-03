@@ -407,7 +407,7 @@ services:
       - BACKUP_KEEP_MONTHS=6
       - HEALTHCHECK_PORT=8080
     volumes:
-      - postgres-backup-data:/backups
+      - /opt/homelab/backups/postgres:/backups
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.20
