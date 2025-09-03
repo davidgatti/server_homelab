@@ -491,6 +491,11 @@ services:
       - BACKUP_STOP_DURING_BACKUP_LABEL=docker-volume-backup.stop-during-backup=true
     volumes:
       - postgres-data:/backup/postgres-data:ro
+      - grafana-data:/backup/grafana-data:ro
+      - n8n-data:/backup/n8n-data:ro
+      - homeassistant-config:/backup/homeassistant-config:ro
+      - qdrant-data:/backup/qdrant-data:ro
+      - pgadmin-data:/backup/pgadmin-data:ro
       - /opt/homelab/backups/postgres:/backup/postgres:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /opt/homelab/backups/volumes:/archive
