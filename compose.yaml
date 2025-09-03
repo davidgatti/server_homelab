@@ -407,7 +407,7 @@ services:
       - BACKUP_KEEP_MONTHS=6
       - HEALTHCHECK_PORT=8080
     volumes:
-      - /opt/homelab/backups/postgres:/backups
+      - /home/research/homelab/backups/databases/postgres:/backups
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.20
@@ -496,9 +496,9 @@ services:
       - homeassistant-config:/backup/homeassistant-config:ro
       - qdrant-data:/backup/qdrant-data:ro
       - pgadmin-data:/backup/pgadmin-data:ro
-      - /opt/homelab/backups/postgres:/backup/postgres:ro
+      - /home/research/homelab/backups/postgres:/backup/postgres:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /opt/homelab/backups/volumes:/archive
+      - /home/research/homelab/backups/volumes:/archive
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.22

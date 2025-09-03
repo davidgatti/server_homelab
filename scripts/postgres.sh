@@ -6,7 +6,7 @@
 set -e
 
 # Configuration
-BACKUP_DIR="/opt/homelab/backups/postgres"
+BACKUP_DIR="$HOME/homelab/backups/databases/postgres"
 CONTAINER_NAME="postgres"
 POSTGRES_USER="admin"
 DEFAULT_DB="default"
