@@ -32,12 +32,18 @@ This repository is a centralized place that codifies the whole HomeLab server. T
    cd HomeLab
    ```
 
-2. **Start services**:
+2. **Create necessary folders**:
+   ```bash
+   mkdir -p ~/homelab/backups/databases/postgres
+   mkdir -p ~/homelab/backups/volumes
+   ```
+
+3. **Start services**:
    ```bash
    ./homelab.sh start
    ```
 
-3. **Check status**:
+4. **Check status**:
    ```bash
    ./homelab.sh status
    ```
