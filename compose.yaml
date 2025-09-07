@@ -238,7 +238,7 @@ services:
       - "homelab.docs=https://docmost.com/docs/"
     environment:
       - TZ=Europe/Rome
-      - DATABASE_URL=postgresql://docmost:docmost_secure_password_2025@postgres:5432/docmost
+      - DATABASE_URL=postgresql://admin:password@postgres:5432/docmost
       - REDIS_URL=redis://redis:6379
       - APP_URL=http://${NETWORK_PREFIX:-192.168.5}.17
       - APP_SECRET=303ddc5b0df7209faa0135bc9f528826d02c0a9d6ce019dd6a267d4b0c3c142a
