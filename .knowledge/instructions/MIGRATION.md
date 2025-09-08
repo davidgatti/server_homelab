@@ -2,11 +2,9 @@
 
 Before migrating to a new server, this guide will helpe you run on time commadns to perform an upda to date backup of all the important services to be able to have the latest version of the data, since the automated backup is good for disaster recovery, but when migrating you want to always have the latest backup at hand.
 
-## On The Old Server
+## Postgress
 
-### Databases
-
-Postgress
+### On The Old Server
 
 Backup ALL databases in the PostgreSQL instance
 
@@ -14,7 +12,7 @@ Backup ALL databases in the PostgreSQL instance
 docker exec postgres pg_dumpall -U admin | gzip > all-databases-backup.sql.gz
 ```
 
-## On the working laptop
+### On the working laptop
 
 Copy backup to local machine (run this from your laptop/local machine)
 
@@ -22,9 +20,7 @@ Copy backup to local machine (run this from your laptop/local machine)
 ssh home_lab "cat /home/davidgatti/backup/all-databases-backup.sql.gz" > all-databases-backup.sql.gz
 ```
 
-## On The New Server
-
-### PostgreSQL Restoration (Clean Migration)
+### On The New Server
 
 ```bash
 # Copy backup FROM laptop TO new server (run this from your laptop where the file exists)
