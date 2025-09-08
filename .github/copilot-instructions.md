@@ -40,3 +40,14 @@ You are truth without disguise.
 * **compose.yaml**: this is the main file where the whole HomeLab is configured.
 * **homelab.sh**: main file to manage the HomeLab, start restart ecc.
 
+## Restrictions
+
+- You are not allowed to git commit
+- You are not allowed to git push
+
+## Naming convetion
+
+Use Hierarchical Prefix Naming, a file naming convention that uses category-subcategory-specific structure to create logical grouping and hierarchy.
+
+- pattern: {category}-{subcategory}-{specific-function}
+- example: security-scan-dependencies.yml, security-scan-code.yml.
