@@ -79,6 +79,44 @@ services:
           memory: 100M        # Guaranteed memory for data
           cpus: '0.05'        # 5% CPU minimum
 
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    hostname: postgres
+    restart: unless-stopped
+    labels:
+      - "homelab.description=Primary PostgreSQL database server for application data storage"
+      - "homelab.purpose=Relational database with ACID compliance for persistent data storage"
+      - "homelab.category=database"
+      - "homelab.docs=https://www.postgresql.org/docs/"
+    environment:
+      - TZ=Europe/Rome
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=default
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256 --auth-local=peer
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.12
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:35  # 53 → 0x35
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d default"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    user: postgres
+    deploy:
+      resources:
+        limits:
+          memory: 800M        # Conservative for low-RAM system
+          cpus: '0.8'         # 80% of one core max (Celeron-friendly)
+        reservations:
+          memory: 400M        # Guaranteed for database performance
+          cpus: '0.2'         # 20% guaranteed
+
   qdrant:
     image: qdrant/qdrant
     container_name: qdrant
@@ -98,7 +136,7 @@ services:
       - qdrant-data:/qdrant/storage
     networks:
       homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.12
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.13
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:0d  # 13 → 0x0D
     healthcheck:
       test: ["CMD-SHELL", "timeout 10 bash -c '</dev/tcp/localhost/80' || exit 1"]
@@ -136,7 +174,7 @@ services:
       - n8n-data:/home/node/.n8n
     networks:
       homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.13
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.14
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:0e  # 14 → 0x0E
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/healthz"]
@@ -176,7 +214,7 @@ services:
       - "/dev/bus/usb:/dev/bus/usb"
     networks:
       homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.14
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.15
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:0f  # 15 → 0x0F
     depends_on:
       postgres:
@@ -205,14 +243,14 @@ services:
       - "homelab.docs=https://jellyfin.org/docs/"
     environment:
       - TZ=Europe/Rome
-      - JELLYFIN_PublishedServerUrl=http://192.168.5.15:8096
+      - JELLYFIN_PublishedServerUrl=http://192.168.5.16:8096
     volumes:
       - /mnt/nas_media:/media:ro
       - jellyfin-config:/config
       - jellyfin-cache:/cache
     networks:
       homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.15
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.16
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:10  # 16 → 0x10
     # No healthcheck as per production configuration
     deploy:
@@ -240,14 +278,14 @@ services:
       - TZ=Europe/Rome
       - DATABASE_URL=postgresql://admin:password@postgres:5432/docmost
       - REDIS_URL=redis://redis:6379
-      - APP_URL=http://${NETWORK_PREFIX:-192.168.5}.16
+      - APP_URL=http://${NETWORK_PREFIX:-192.168.5}.17
       - APP_SECRET=303ddc5b0df7209faa0135bc9f528826d02c0a9d6ce019dd6a267d4b0c3c142a
       - PORT=80
     volumes:
       - docmost-data:/app/data
     networks:
       homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.16
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.17
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:11  # 17 → 0x11
     depends_on:
       postgres:
@@ -292,7 +330,7 @@ services:
       - "/dev/bus/usb:/dev/bus/usb"
     networks:
       homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.17
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.18
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:12  # 18 → 0x12
     healthcheck:
       test: ["CMD-SHELL", "timeout 10 bash -c '</dev/tcp/localhost/631' || exit 1"]
@@ -309,44 +347,6 @@ services:
         reservations:
           memory: 128M
           cpus: '0.1'
-
-  postgres:
-    image: postgres:latest
-    container_name: postgres
-    hostname: postgres
-    restart: unless-stopped
-    labels:
-      - "homelab.description=Primary PostgreSQL database server for application data storage"
-      - "homelab.purpose=Relational database with ACID compliance for persistent data storage"
-      - "homelab.category=database"
-      - "homelab.docs=https://www.postgresql.org/docs/"
-    environment:
-      - TZ=Europe/Rome
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=default
-      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256 --auth-local=peer
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    networks:
-      homelab:
-        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.18
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:35  # 53 → 0x35
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin -d default"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    user: postgres
-    deploy:
-      resources:
-        limits:
-          memory: 800M        # Conservative for low-RAM system
-          cpus: '0.8'         # 80% of one core max (Celeron-friendly)
-        reservations:
-          memory: 400M        # Guaranteed for database performance
-          cpus: '0.2'         # 20% guaranteed
 
   watchtower:
     image: containrrr/watchtower
