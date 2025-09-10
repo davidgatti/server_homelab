@@ -3,5 +3,47 @@
 		{
 			"path": "."
 		}
-	]
+	],
+	"extensions": {
+		"recommendations": [
+			"ms-vscode.vscode-docker",
+			"redhat.vscode-yaml",
+			"ms-vscode.vscode-json",
+			"timonwong.shellcheck",
+			"davidanson.vscode-markdownlint",
+			"esbenp.prettier-vscode"
+		]
+	},
+	"settings": {
+		"editor.formatOnSave": true,
+		"files.associations": {
+			"*.yml": "yaml",
+			"*.yaml": "yaml"
+		},
+		"[yaml]": {
+			"editor.formatOnSave": true,
+			"editor.insertSpaces": true,
+			"editor.tabSize": 2,
+			"editor.autoIndent": "advanced"
+		},
+		"[markdown]": {
+			"editor.defaultFormatter": "vscode.markdown-language-features",
+			"editor.formatOnSave": true,
+			"editor.wordWrap": "on",
+			"editor.quickSuggestions": {
+				"comments": "off",
+				"strings": "off",
+				"other": "off"
+			}
+		},
+		"yaml.format.enable": true,
+		"yaml.format.singleQuote": false,
+		"yaml.format.bracketSpacing": true,
+		"yaml.format.printWidth": 120,
+		"markdownlint.config": {
+			"MD013": false,
+			"MD033": false,
+			"MD041": false
+		}
+	}
 }
