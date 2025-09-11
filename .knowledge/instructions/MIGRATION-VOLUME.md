@@ -9,23 +9,30 @@ Before migrating to a new server, this guide will help you create an up-to-date 
 Create a fresh backup of existing volumes using the same backup image
 
 ```bash
-# Create a one-time backup with current timestamp of only the volumes you care about
+# Create a one-time backup of only the volumes you care about
 docker run --rm \
   -v n8n-data:/backup/n8n-data:ro \
   -v docmost-data:/backup/docmost-data:ro \
   -v cups-config:/backup/cups-config:ro \
-  -v $(pwd)/migration-backup:/archive \
-  -e BACKUP_FILENAME=migration-volumes-$(date +%Y%m%d-%H%M%S).tar.gz \
+  -v homeassistant-config:/backup/homeassistant-config:ro \
+  -v $(pwd):/archive \
+  -e BACKUP_FILENAME=migration-volumes-backup.tar.gz \
+  --entrypoint backup \
   offen/docker-volume-backup:latest
 ```
 
+sudo chown $USER:$USER migration-volumes-backup.tar.gz
+
 ### On the working laptop
 
-Copy the migration backup to local machine (run this from your laptop/local machine)
+If you ran the backup on a **remote server** (home_lab), copy it to your laptop:
 
 ```bash
-ssh home_lab "cat /home/davidgatti/migration-backup/migration-volumes-*.tar.gz" > migration-volumes-backup.tar.gz
+# This reads the file FROM the remote server and saves it locally
+ssh home_lab "cat migration-volumes-backup.tar.gz" > migration-volumes-backup.tar.gz
 ```
+
+If you ran the backup **locally** (like you just did), the file is already available - skip this step.
 
 ### On The New Server
 
@@ -51,12 +58,10 @@ docker compose up --no-start
 
 # Restore important volumes from the backup (other volumes will start fresh)
 docker run --rm \
-  -v postgres-data:/backup/postgres-data \
-  -v qdrant-data:/backup/qdrant-data \
-  -v n8n-data:/backup/n8n-data \
-  -v homeassistant-config:/backup/homeassistant-config \
-  -v docmost-data:/backup/docmost-data \
-  -v cups-config:/backup/cups-config \
+  -v homelab_n8n-data:/backup/n8n-data \
+  -v homelab_docmost-data:/backup/docmost-data \
+  -v homelab_cups-config:/backup/_cups-config \
+  -v homelab_homeassistant-config:/backup/homeassistant-config \
   -v $(pwd):/archive \
   offen/docker-volume-backup:latest \
   /bin/sh -c "cd /archive && tar -xzf migration-volumes-backup.tar.gz --strip-components=1"
