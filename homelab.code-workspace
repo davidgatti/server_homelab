@@ -11,14 +11,17 @@
 			"ms-vscode.vscode-json",
 			"timonwong.shellcheck",
 			"davidanson.vscode-markdownlint",
-			"esbenp.prettier-vscode"
+			"esbenp.prettier-vscode",
+			"gatti.aetherion-cpu-monitor"
 		]
 	},
 	"settings": {
 		"editor.formatOnSave": true,
 		"files.associations": {
 			"*.yml": "yaml",
-			"*.yaml": "yaml"
+			"*.yaml": "yaml",
+			"*.sh": "shellscript",
+			"homelab.sh": "shellscript"
 		},
 		"[yaml]": {
 			"editor.formatOnSave": true,
@@ -36,6 +39,13 @@
 				"other": "off"
 			}
 		},
+		"[shellscript]": {
+			"editor.defaultFormatter": "timonwong.shellcheck",
+			"editor.formatOnSave": false,
+			"editor.codeActionsOnSave": {
+				"source.fixAll.shellcheck": "explicit"
+			}
+		},
 		"yaml.format.enable": true,
 		"yaml.format.singleQuote": false,
 		"yaml.format.bracketSpacing": true,
@@ -44,6 +54,17 @@
 			"MD013": false,
 			"MD033": false,
 			"MD041": false
-		}
+		},
+		"shellcheck.enable": true,
+		"shellcheck.enableQuickFix": true,
+		"shellcheck.run": "onType",
+		"shellcheck.executablePath": "",
+		"shellcheck.exclude": [],
+		"shellcheck.customArgs": [],
+		"shellcheck.ignorePatterns": {
+			"**/*.zsh": true,
+			"**/*.bash_*": false
+		},
+		"shellcheck.useWSL": false
 	}
 }

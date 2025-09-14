@@ -65,7 +65,8 @@ detect_network() {
     info "Detecting network configuration..."
     
     # Get current IP addresses on this system
-    local current_ip=$(hostname -I | tr ' ' '\n' | grep -E "^($RESEARCH_NETWORK|$LAB_NETWORK)\." | head -1)
+    local current_ip
+    current_ip=$(hostname -I | tr ' ' '\n' | grep -E "^($RESEARCH_NETWORK|$LAB_NETWORK)\." | head -1)
     
     if [[ "$current_ip" =~ ^$RESEARCH_NETWORK\. ]]; then
         DETECTED_NETWORK="$RESEARCH_NETWORK"
@@ -87,8 +88,10 @@ detect_network() {
         info "🏠 Detected LAB network: $DETECTED_NETWORK.x on interface $DETECTED_INTERFACE"
     else
         # Fallback: check route table for these networks
-        local research_interface=$(ip route | grep "$RESEARCH_NETWORK" | grep -v docker | awk '{print $3}' | head -1 2>/dev/null || echo "")
-        local lab_interface=$(ip route | grep "$LAB_NETWORK" | grep -v docker | awk '{print $3}' | head -1 2>/dev/null || echo "")
+        local research_interface
+        local lab_interface
+        research_interface=$(ip route | grep "$RESEARCH_NETWORK" | grep -v docker | awk '{print $3}' | head -1 2>/dev/null || echo "")
+        lab_interface=$(ip route | grep "$LAB_NETWORK" | grep -v docker | awk '{print $3}' | head -1 2>/dev/null || echo "")
         
         if [ -n "$research_interface" ]; then
             DETECTED_NETWORK="$RESEARCH_NETWORK"
@@ -123,14 +126,17 @@ network_to_mac_id() {
 
 generate_mac_address() {
     local ip_last_octet="$1"
-    local network_id=$(network_to_mac_id "$DETECTED_NETWORK")
-    local hex_octet=$(printf "%02x" "$ip_last_octet")
+    local network_id
+    local hex_octet
+    network_id=$(network_to_mac_id "$DETECTED_NETWORK")
+    hex_octet=$(printf "%02x" "$ip_last_octet")
     echo "02:42:48:4C:$network_id:$hex_octet"
 }
 
 show_mac_addresses() {
     info "📍 MAC Addresses for $DETECTED_NETWORK.x network:"
-    local network_id=$(network_to_mac_id "$DETECTED_NETWORK")
+    local network_id
+    network_id=$(network_to_mac_id "$DETECTED_NETWORK")
     local mac_prefix="02:42:48:4C:$network_id"
     echo "   Pattern: $mac_prefix:XX"
     echo "   postgres      ($DETECTED_NETWORK.53): $mac_prefix:35  (53 → 0x35) [homelab-postgres]"
@@ -162,7 +168,8 @@ set_environment_variables() {
     export NETWORK_INTERFACE="$DETECTED_INTERFACE"
     
     # Export MAC network prefix (same structure as IP addresses)
-    local network_id=$(network_to_mac_id "$DETECTED_NETWORK")
+    local network_id
+    network_id=$(network_to_mac_id "$DETECTED_NETWORK")
     export MAC_NETWORK_PREFIX="02:42:48:4C:$network_id"
     
     info "✅ Environment variables set:"
@@ -231,7 +238,8 @@ logs() {
 
 # Backup volumes
 backup() {
-    local backup_dir="/opt/homelab/backups/$(date +%Y%m%d_%H%M%S)"
+    local backup_dir
+    backup_dir="/opt/homelab/backups/$(date +%Y%m%d_%H%M%S)"
     
     log "Creating backup directory: $backup_dir"
     sudo mkdir -p "$backup_dir"
@@ -280,7 +288,8 @@ reset() {
     
     # Step 2: Remove all HomeLab volumes
     log "🗄️  Step 2/6: Removing all HomeLab Docker volumes..."
-    local volumes=$(docker volume ls --filter "name=homelab" -q 2>/dev/null || true)
+    local volumes
+    volumes=$(docker volume ls --filter "name=homelab" -q 2>/dev/null || true)
     if [ -n "$volumes" ]; then
         echo "$volumes" | xargs -r docker volume rm -f
         info "Removed volumes: $(echo $volumes | tr '\n' ' ')"
@@ -290,7 +299,8 @@ reset() {
     
     # Step 3: Remove HomeLab networks
     log "🌐 Step 3/6: Removing HomeLab networks..."
-    local networks=$(docker network ls --filter "name=homelab" -q 2>/dev/null || true)
+    local networks
+    networks=$(docker network ls --filter "name=homelab" -q 2>/dev/null || true)
     if [ -n "$networks" ]; then
         echo "$networks" | xargs -r docker network rm
         info "Removed networks: $(echo $networks | tr '\n' ' ')"
@@ -314,7 +324,8 @@ reset() {
     
     # Step 6: Remove any potential orphaned images
     log "🏷️  Step 6/6: Removing HomeLab related images..."
-    local images=$(docker images --filter "reference=postgres" --filter "reference=grafana/grafana" --filter "reference=prom/*" --filter "reference=gcr.io/cadvisor/cadvisor" -q 2>/dev/null | sort -u || true)
+    local images
+    images=$(docker images --filter "reference=postgres" --filter "reference=grafana/grafana" --filter "reference=prom/*" --filter "reference=gcr.io/cadvisor/cadvisor" -q 2>/dev/null | sort -u || true)
     if [ -n "$images" ]; then
         echo "$images" | xargs -r docker rmi -f 2>/dev/null || true
         info "Attempted to remove HomeLab-related images"
