@@ -243,7 +243,7 @@ services:
       - "homelab.docs=https://jellyfin.org/docs/"
     environment:
       - TZ=Europe/Rome
-      - JELLYFIN_PublishedServerUrl=http://192.168.5.16:8096
+      - JELLYFIN_PublishedServerUrl=http://${NETWORK_PREFIX:-192.168.5}.16:8096
     volumes:
       - /mnt/nas_media:/media:ro
       - jellyfin-config:/config
