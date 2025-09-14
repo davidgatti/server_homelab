@@ -57,14 +57,20 @@ docker volume rm $(docker volume ls -q --filter name=homelab) 2>/dev/null || tru
 docker compose up --no-start
 
 # Restore important volumes from the backup (other volumes will start fresh)
-docker run --rm \
-  -v homelab_n8n-data:/backup/n8n-data \
-  -v homelab_docmost-data:/backup/docmost-data \
-  -v homelab_cups-config:/backup/_cups-config \
-  -v homelab_homeassistant-config:/backup/homeassistant-config \
-  -v $(pwd):/archive \
-  offen/docker-volume-backup:latest \
-  /bin/sh -c "cd /archive && tar -xzf migration-volumes-backup.tar.gz --strip-components=1"
+docker run --rm -v $(pwd):/backup -v homelab_n8n-data:/data alpine:latest \
+  tar -xzf /backup/migration-volumes-backup.tar.gz --strip-components=2 -C /data backup/n8n-data
+
+docker run --rm -v $(pwd):/backup -v homelab_docmost-data:/data alpine:latest \
+  tar -xzf /backup/migration-volumes-backup.tar.gz --strip-components=2 -C /data backup/docmost-data
+
+docker run --rm -v $(pwd):/backup -v homelab_cups-config:/data alpine:latest \
+  tar -xzf /backup/migration-volumes-backup.tar.gz --strip-components=2 -C /data backup/cups-config
+
+docker run --rm -v $(pwd):/backup -v homelab_homeassistant-config:/data alpine:latest \
+  tar -xzf /backup/migration-volumes-backup.tar.gz --strip-components=2 -C /data backup/homeassistant-config
+
+# Fix permissions for docmost (runs as node user uid=1000)
+docker run --rm -v homelab_docmost-data:/data alpine:latest chown -R 1000:1000 /data
 
 # Start all services
 docker compose up -d

@@ -195,7 +195,42 @@ status() {
     docker volume ls | grep homelab || warn "No homelab volumes found"
 }
 
-# Start all services
+# Prepare infrastructure (create volumes and networks) without starting services
+prepare() {
+    detect_network
+    set_environment_variables
+    
+    log "Preparing HomeLab infrastructure on $DETECTED_NETWORK.x network..."
+    log "Creating volumes and networks without starting services..."
+    docker compose up --no-start
+    
+    log "Infrastructure prepared successfully!"
+    log "Volumes and networks are ready. Use '$0 start-only' to start services."
+    
+    # Show what was created
+    echo ""
+    log "Created volumes:"
+    docker volume ls | grep homelab || warn "No homelab volumes found"
+    echo ""
+    log "Created networks:"
+    docker network ls | grep homelab || warn "No homelab networks found"
+}
+
+# Start services only (assumes infrastructure already exists)
+start_only() {
+    detect_network
+    set_environment_variables
+    
+    log "Starting HomeLab services (infrastructure should already exist)..."
+    docker compose start
+    
+    log "Waiting for services to be healthy..."
+    sleep 10
+    
+    status
+}
+
+# Start all services (prepare + start in one command)
 start() {
     detect_network
     set_environment_variables
@@ -354,7 +389,9 @@ HomeLab Management Script
 Usage: $0 [COMMAND]
 
 Commands:
-    start       Start all services (auto-detects network)
+    prepare     Create volumes and networks without starting services
+    start       Start all services (auto-detects network and creates infrastructure)
+    start-only  Start services only (assumes infrastructure already exists)
     stop        Stop all services  
     restart     Restart all services
     status      Show status of all services and current network
@@ -374,8 +411,23 @@ Network Auto-Detection:
     exports NETWORK_PREFIX and NETWORK_INTERFACE environment variables
     for Docker Compose to use with native variable substitution.
 
+Infrastructure Workflow:
+    Option 1 (All-in-one):
+        $0 start          # Creates infrastructure AND starts services
+    
+    Option 2 (Separate steps):
+        $0 prepare        # Create volumes/networks (like docker compose up --no-start)
+        $0 start-only     # Start the services
+    
+    The separate workflow is useful when you want to:
+    • Verify network/volume creation before starting services
+    • Prepare infrastructure on one network, then start on another
+    • Debug network issues without starting all services
+
 Examples:
-    $0 start           # Auto-detect network and start
+    $0 prepare         # Create volumes/networks without starting services
+    $0 start           # Auto-detect network, create infrastructure, and start
+    $0 start-only      # Start services only (infrastructure must exist)
     $0 network         # Show detected network info
     $0 mac             # Show MAC addresses for current network
     $0 hostnames       # Show hostnames for UDM router
@@ -408,8 +460,14 @@ main() {
     check_dependencies
     
     case "${1:-help}" in
+        prepare)
+            prepare
+            ;;
         start)
             start
+            ;;
+        start-only)
+            start_only
             ;;
         stop)
             stop
