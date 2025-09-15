@@ -20,8 +20,7 @@
 		"files.associations": {
 			"*.yml": "yaml",
 			"*.yaml": "yaml",
-			"*.sh": "shellscript",
-			"homelab.sh": "shellscript"
+			"*.sh": "shellscript"
 		},
 		"[yaml]": {
 			"editor.formatOnSave": true,

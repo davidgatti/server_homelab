@@ -219,24 +219,23 @@ This repository is a centralized place that codifies the whole HomeLab server. T
 
 3. **Start services**:
    ```bash
-   ./homelab.sh start
+   docker compose up -d
    ```
 
 4. **Check status**:
    ```bash
-   ./homelab.sh status
+   docker compose ps
    ```
 
 ## Management Commands
 
-The `homelab.sh` script provides easy management:
+Standard Docker Compose commands:
 
 ```bash
-./homelab.sh start            # Start all services
-./homelab.sh stop             # Stop all services
-./homelab.sh restart          # Restart all services
-./homelab.sh status           # Show service status
-./homelab.sh logs             # Show all logs
-./homelab.sh logs postgres    # Show specific service logs
-./homelab.sh backup           # Backup all data
+docker compose up -d          # Start all services
+docker compose down           # Stop all services
+docker compose restart       # Restart all services
+docker compose ps            # Show service status
+docker compose logs          # Show all logs
+docker compose logs postgres # Show specific service logs
 ```

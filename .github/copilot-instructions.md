@@ -78,15 +78,15 @@ This repository is a Docker Compose that codifies my HomeLab setup in one reposi
 
 * **.gitignore**: things to not track with git
 * **compose.yaml**: this is the main file where the whole HomeLab is configured.
-* **homelab.sh**: a special script that manages container i na dynamic way by passig nenv variables to the compose file.
+* **.env**: environment variables for network configuration
 
 ### Tools
 
-**homelab.sh**: 
+**Standard Docker Compose**: 
 
-main file to manage the docker life cycle, start restart ecc. because the compose file is designed in a way to take in a lot of dynamic valeus based on the type of server it is running on. Do no use dirrect docker command, us direct one only if the script dose not provided what is needed.
+Use standard Docker Compose commands for all container management. The `.env` file automatically configures network settings.
 
-**netwrok debugging**
+**Network debugging**
 
 when working with his compose you need to remember that each service is configured to use a macvlan, so you will never ever be able to curl, or ping a service from the host, use a pass throught temporary docker container with a unique IP to test the connection to the server.
 
