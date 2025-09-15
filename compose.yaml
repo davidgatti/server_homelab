@@ -387,34 +387,32 @@ services:
       start_period: 30s
 
   volume-backup:
-    image: offen/docker-volume-backup:latest
+    image: jkaninda/volume-backup:latest
     container_name: volume-backup
     hostname: vol-backup
     restart: unless-stopped
+    command: backup --cron-expression "0 3 * * *" --prune
     labels:
-      - "homelab.description=Docker volume backup service - creates compressed archives of Docker volumes"
-      - "homelab.purpose=Backup Docker volumes and file systems with automated retention management"
+      - "homelab.description=Professional Docker volume backup service - creates compressed archives of Docker volumes"
+      - "homelab.purpose=Backup Docker volumes with proper timezone support and automated retention management"
       - "homelab.category=backup"
       - "homelab.schedule=0 3 * * * (3 AM daily)"
       - "homelab.retention=30 days"
-      - "homelab.docs=https://github.com/offen/docker-volume-backup"
+      - "homelab.docs=https://github.com/jkaninda/volume-backup"
     environment:
       - TZ=Europe/Rome
-      - BACKUP_CRON_EXPRESSION=0 3 * * *
-      - BACKUP_FILENAME=homelab-backup-%Y%m%d-%H%M%S.tar.gz
-      - BACKUP_RETENTION_DAYS=30
-      - BACKUP_STOP_DURING_BACKUP_LABEL=docker-volume-backup.stop-during-backup=true
+      - BACKUP_KEEP_DAYS=30
+      - BACKUP_PREFIX=homelab-backup
     volumes:
-      - postgres-data:/backup/postgres-data:ro
-      - grafana-data:/backup/grafana-data:ro
-      - n8n-data:/backup/n8n-data:ro
-      - homeassistant-config:/backup/homeassistant-config:ro
-      - qdrant-data:/backup/qdrant-data:ro
-      - pgadmin-data:/backup/pgadmin-data:ro
-      - /home/research/homelab/backups/postgres:/backup/postgres:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Mount all volumes to be backed up into /data
+      - postgres-data:/data/postgres-data:ro
+      - grafana-data:/data/grafana-data:ro
+      - n8n-data:/data/n8n-data:ro
+      - homeassistant-config:/data/homeassistant-config:ro
+      - qdrant-data:/data/qdrant-data:ro
+      - pgadmin-data:/data/pgadmin-data:ro
       # Backup destination organized by network and type (e.g., /mnt/backup/192.168.3.x/volumes)
-      - /mnt/backup/${NETWORK_PREFIX:-192.168.5}.x/volumes:/archive
+      - /mnt/backup/${NETWORK_PREFIX:-192.168.5}.x/volumes:/backup
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.22
