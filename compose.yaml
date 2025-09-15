@@ -400,7 +400,7 @@ services:
     environment:
       - TZ=Europe/Rome
       - BACKUP_CRON_EXPRESSION=0 3 * * *
-      - BACKUP_FILENAME=backup-%Y%m%d-%H%M%S.tar.gz
+      - BACKUP_FILENAME=homelab-backup-%Y%m%d-%H%M%S.tar.gz
       - BACKUP_RETENTION_DAYS=30
       - BACKUP_STOP_DURING_BACKUP_LABEL=docker-volume-backup.stop-during-backup=true
     volumes:
@@ -412,7 +412,8 @@ services:
       - pgadmin-data:/backup/pgadmin-data:ro
       - /home/research/homelab/backups/postgres:/backup/postgres:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /home/research/homelab/backups/volumes:/archive
+      # Backup destination organized by network (e.g., /mnt/backup/192.168.3.x)
+      - /mnt/backup/${NETWORK_PREFIX:-192.168.5}.x:/archive
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.22
