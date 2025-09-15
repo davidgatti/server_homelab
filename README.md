@@ -9,33 +9,39 @@ This repository is a centralized place that codifies the whole HomeLab server. T
 **Before running compose for the first time, you need to prepare your system. Follow these steps in order:**
 
 1. **Update and upgrade the system**:
+
    ```bash
    sudo apt update
    sudo apt upgrade -y
    ```
 
 2. **Install Docker** (if not already installed):
+
    ```bash
    curl -fsSL https://get.docker.com | sudo bash
    ```
 
 3. **Add your user to docker group**:
+
    ```bash
    sudo usermod -aG docker $USER
    # Log out and back in, or run: newgrp docker
    ```
 
 4. **Ensure you're using regular Docker** (not rootless):
+
    ```bash
    docker context use default
    ```
 
 5. **Reboot to apply group changes**:
+
    ```bash
    sudo reboot
    ```
 
 6. **Install GitHub CLI and configure Git**:
+
    ```bash
    sudo apt install gh
    git config --global user.name "David Gatti"
@@ -44,18 +50,21 @@ This repository is a centralized place that codifies the whole HomeLab server. T
    ```
 
 7. **Clone necessary repositories**:
+
    ```bash
    git clone https://github.com/davidgatti/tools_cli.git
    ```
 
 8. **Install basic tools**:
+
    ```bash
    sudo apt update && sudo apt install -y mc zip jq cmatrix
    ```
 
 9. **Set up NAS mounting** (with resilience for disconnections):
-   
+
    First, ensure cifs-utils is installed:
+
    ```bash
    dpkg -s cifs-utils &>/dev/null || (echo "Installing cifs-utils..." && sudo apt update && sudo apt install -y cifs-utils)
    ```
@@ -65,6 +74,7 @@ This repository is a centralized place that codifies the whole HomeLab server. T
    **Create systemd automount units for each share:**
 
    **Dropbox Share:**
+
    ```bash
    sudo mkdir -p /mnt/nas_dropbox
    sudo groupadd nas_dropbox
@@ -107,6 +117,7 @@ This repository is a centralized place that codifies the whole HomeLab server. T
    ```
 
    **Media Share:**
+
    ```bash
    sudo mkdir -p /mnt/nas_media
    sudo groupadd nas_media
@@ -149,6 +160,7 @@ This repository is a centralized place that codifies the whole HomeLab server. T
    ```
 
    **Docker Share:**
+
    ```bash
    sudo mkdir -p /mnt/nas_docker
    sudo groupadd nas_docker
@@ -191,6 +203,7 @@ This repository is a centralized place that codifies the whole HomeLab server. T
    ```
 
    **Enable and start the automount units:**
+
    ```bash
    sudo systemctl daemon-reload
    sudo systemctl enable mnt-nas_dropbox.automount mnt-nas_media.automount mnt-nas_docker.automount
@@ -198,6 +211,7 @@ This repository is a centralized place that codifies the whole HomeLab server. T
    ```
 
 10. **Activate the mounts**:
+
     ```bash
     sudo systemctl daemon-reload
     sudo mount -a
@@ -206,23 +220,27 @@ This repository is a centralized place that codifies the whole HomeLab server. T
 ### Project Setup
 
 1. **Clone and setup**:
+
    ```bash
    git clone https://github.com/davidgatti/HomeLab
    cd HomeLab
    ```
 
 2. **Create necessary folders**:
+
    ```bash
    mkdir -p ~/homelab/backups/databases/postgres
    mkdir -p ~/homelab/backups/volumes
    ```
 
 3. **Start services**:
+
    ```bash
    docker compose up -d
    ```
 
 4. **Check status**:
+
    ```bash
    docker compose ps
    ```
