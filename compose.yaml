@@ -162,16 +162,17 @@ services:
       - "homelab.category=automation"
       - "homelab.access=Web UI on port 80"
       - "homelab.depends=postgres,redis"
-      - "homelab.features=Device discovery, automation, dashboards, mobile apps"
+      - "homelab.features=Device discovery, automation, dashboards, mobile apps, Zigbee, Bluetooth"
       - "homelab.docs=https://www.home-assistant.io/docs/"
-    user: "0"
+    privileged: true
     environment:
       - TZ=Europe/Rome
     volumes:
       - homeassistant-config:/config
       - /run/dbus:/run/dbus:ro
     devices:
-      - "/dev/bus/usb:/dev/bus/usb"
+      - "/dev/ttyUSB0:/dev/ttyUSB0"  # Zigbee coordinator
+      - "/dev/bus/usb:/dev/bus/usb"  # Bluetooth support
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.15
