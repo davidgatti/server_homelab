@@ -235,6 +235,7 @@ services:
       - PORT=80
     volumes:
       - docmost-data:/app/data
+      - docmost-data-storage:/app/data/storage
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.17
@@ -746,6 +747,8 @@ volumes:
   jellyfin-cache:
     driver: local
   docmost-data:
+    driver: local
+  docmost-data-storage:
     driver: local
   homeassistant-config:
     driver: local
