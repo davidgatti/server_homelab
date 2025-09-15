@@ -336,8 +336,8 @@ services:
       - BACKUP_KEEP_MONTHS=6
       - HEALTHCHECK_PORT=8080
     volumes:
-      # Database backup destination organized by network (e.g., /mnt/backup/192.168.3.x/databases)
-      - /mnt/backup/${NETWORK_PREFIX:-192.168.5}.x/databases:/backups
+      # Database backup destination organized by network and database type (e.g., /mnt/backup/192.168.3.x/databases/postgres)
+      - /mnt/backup/${NETWORK_PREFIX:-192.168.5}.x/databases/postgres:/backups
       - postgres-backup-data:/var/lib/postgresql/data
     networks:
       homelab:
@@ -413,8 +413,8 @@ services:
       - pgadmin-data:/backup/pgadmin-data:ro
       - /home/research/homelab/backups/postgres:/backup/postgres:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      # Backup destination organized by network (e.g., /mnt/backup/192.168.3.x)
-      - /mnt/backup/${NETWORK_PREFIX:-192.168.5}.x:/archive
+      # Backup destination organized by network and type (e.g., /mnt/backup/192.168.3.x/volumes)
+      - /mnt/backup/${NETWORK_PREFIX:-192.168.5}.x/volumes:/archive
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.22
