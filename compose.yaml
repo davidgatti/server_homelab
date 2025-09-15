@@ -26,14 +26,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    deploy:
-      resources:
-        limits:
-          memory: 128M        # Lightweight speed test server
-          cpus: '0.2'         # Can spike during speed tests
-        reservations:
-          memory: 64M         # Small guaranteed allocation
-          cpus: '0.05'        # 5% CPU minimum
 
   redis:
     image: redis:latest
@@ -70,14 +62,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 15s
-    deploy:
-      resources:
-        limits:
-          memory: 300M        # Redis with persistence and caching
-          cpus: '0.2'         # Light CPU usage for caching
-        reservations:
-          memory: 100M        # Guaranteed memory for data
-          cpus: '0.05'        # 5% CPU minimum
 
   postgres:
     image: postgres:latest
@@ -108,14 +92,6 @@ services:
       retries: 3
       start_period: 30s
     user: postgres
-    deploy:
-      resources:
-        limits:
-          memory: 800M        # Conservative for low-RAM system
-          cpus: '0.8'         # 80% of one core max (Celeron-friendly)
-        reservations:
-          memory: 400M        # Guaranteed for database performance
-          cpus: '0.2'         # 20% guaranteed
 
   qdrant:
     image: qdrant/qdrant
@@ -144,14 +120,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    deploy:
-      resources:
-        limits:
-          memory: 512M        # Vector database can be memory intensive
-          cpus: '0.5'         # Vector operations can be CPU intensive
-        reservations:
-          memory: 256M        # Guaranteed memory for vector storage
-          cpus: '0.1'         # 10% CPU minimum
 
   n8n:
     image: n8nio/n8n:latest
@@ -182,14 +150,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 45s
-    deploy:
-      resources:
-        limits:
-          memory: 1024M        # n8n can be memory intensive with complex workflows
-          cpus: '0.4'         # Workflow execution can be CPU intensive
-        reservations:
-          memory: 1024M        # Guaranteed memory for workflow execution
-          cpus: '0.1'         # 10% CPU minimum
 
   homeassistant:
     image: ghcr.io/home-assistant/home-assistant:stable
@@ -253,14 +213,6 @@ services:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.16
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:10  # 16 → 0x10
     # No healthcheck as per production configuration
-    deploy:
-      resources:
-        limits:
-          memory: 2G          # Media transcoding can be memory intensive
-          cpus: '1.0'         # Hardware transcoding benefits from CPU allocation
-        reservations:
-          memory: 512M        # Guaranteed memory for media server
-          cpus: '0.2'         # 20% CPU minimum for streaming
 
   docmost:
     image: docmost/docmost:latest
@@ -298,14 +250,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 60s
-    deploy:
-      resources:
-        limits:
-          memory: 512M        # Documentation platform with real-time features
-          cpus: '0.4'         # Moderate CPU for document processing
-        reservations:
-          memory: 256M        # Guaranteed memory for application
-          cpus: '0.1'         # 10% CPU minimum
 
   cups:
     image: unixorn/cupsd:latest
@@ -339,14 +283,6 @@ services:
       retries: 3
       start_period: 45s
     privileged: true
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-          cpus: '0.3'
-        reservations:
-          memory: 128M
-          cpus: '0.1'
 
   watchtower:
     image: containrrr/watchtower
@@ -373,14 +309,6 @@ services:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.19
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:36  # 54 → 0x36
-    deploy:
-      resources:
-        limits:
-          memory: 128M        # Watchtower is very lightweight
-          cpus: '0.1'         # Minimal CPU for background task
-        reservations:
-          memory: 64M         # Small guaranteed allocation
-          cpus: '0.05'        # 5% CPU minimum
 
   postgres-backup:
     image: prodrigestivill/postgres-backup-local
@@ -421,14 +349,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    deploy:
-      resources:
-        limits:
-          memory: 512M        # Sufficient for database dump buffering
-          cpus: '0.3'         # 30% CPU max for backup operations
-        reservations:
-          memory: 128M        # Guaranteed for basic operations
-          cpus: '0.1'         # 10% CPU minimum
 
   alertmanager:
     image: prom/alertmanager:latest
@@ -462,14 +382,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    deploy:
-      resources:
-        limits:
-          memory: 200M        # AlertManager for notifications
-          cpus: '0.2'         # Light alerting service
-        reservations:
-          memory: 100M        # Reasonable guarantee
-          cpus: '0.05'        # Minimal CPU when idle
 
   volume-backup:
     image: offen/docker-volume-backup:latest
@@ -509,14 +421,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    deploy:
-      resources:
-        limits:
-          memory: 256M        # Backup can spike but should be limited
-          cpus: '0.3'         # Backup I/O intensive but short bursts
-        reservations:
-          memory: 128M        # Minimal guaranteed
-          cpus: '0.05'        # Very low CPU when idle
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -550,14 +454,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 60s
-    deploy:
-      resources:
-        limits:
-          memory: 300M        # pgAdmin web interface (HomeLab usage)
-          cpus: '0.25'        # Light web interface
-        reservations:
-          memory: 150M        # Reasonable guarantee
-          cpus: '0.05'        # Minimal CPU when idle
 
   prometheus:
     image: prom/prometheus:latest
@@ -600,14 +496,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 45s
-    deploy:
-      resources:
-        limits:
-          memory: 500M        # Prometheus needs memory for time series data
-          cpus: '0.6'         # Can be CPU intensive during scraping
-        reservations:
-          memory: 250M        # Guaranteed for metrics storage
-          cpus: '0.15'        # 15% CPU minimum
 
   grafana:
     image: grafana/grafana:latest
@@ -645,14 +533,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 60s
-    deploy:
-      resources:
-        limits:
-          memory: 400M        # Grafana for HomeLab dashboards
-          cpus: '0.4'         # Can be CPU intensive with complex dashboards
-        reservations:
-          memory: 200M        # Reasonable guarantee for web interface
-          cpus: '0.1'         # 10% CPU minimum
 
   blackbox-exporter:
     image: prom/blackbox-exporter:latest
@@ -682,14 +562,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    deploy:
-      resources:
-        limits:
-          memory: 100M        # Lightweight HTTP/TCP/DNS prober
-          cpus: '0.1'         # Minimal CPU for periodic checks
-        reservations:
-          memory: 50M         # Small guaranteed allocation
-          cpus: '0.02'        # 2% CPU minimum
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
@@ -723,14 +595,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    deploy:
-      resources:
-        limits:
-          memory: 200M        # cAdvisor is lightweight monitoring
-          cpus: '0.2'         # Low CPU for container metrics
-        reservations:
-          memory: 100M        # Small guaranteed allocation
-          cpus: '0.05'        # Minimal CPU guarantee
 
   postgres-exporter:
     image: prometheuscommunity/postgres-exporter:latest
@@ -759,14 +623,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    deploy:
-      resources:
-        limits:
-          memory: 100M        # Very lightweight metrics exporter
-          cpus: '0.1'         # Minimal CPU for metrics export
-        reservations:
-          memory: 50M         # Small guaranteed allocation
-          cpus: '0.02'        # 2% CPU minimum
 
   redis-exporter:
     image: oliver006/redis_exporter:latest
@@ -795,14 +651,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    deploy:
-      resources:
-        limits:
-          memory: 50M         # Very lightweight metrics exporter
-          cpus: '0.1'         # Minimal CPU for metrics export
-        reservations:
-          memory: 25M         # Small guaranteed allocation
-          cpus: '0.02'        # 2% CPU minimum
 
   loki:
     image: grafana/loki:latest
@@ -832,14 +680,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    deploy:
-      resources:
-        limits:
-          memory: 200M        # Log storage and processing
-          cpus: '0.3'         # Moderate CPU for log indexing
-        reservations:
-          memory: 150M        # Guaranteed allocation for log storage
-          cpus: '0.1'         # 10% CPU minimum
 
   promtail:
     image: grafana/promtail:latest
@@ -875,14 +715,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    deploy:
-      resources:
-        limits:
-          memory: 50M         # Lightweight log collection agent
-          cpus: '0.1'         # Minimal CPU for log parsing
-        reservations:
-          memory: 30M         # Small guaranteed allocation
-          cpus: '0.02'        # 2% CPU minimum
 
 volumes:
   postgres-data:
