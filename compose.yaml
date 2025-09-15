@@ -337,6 +337,7 @@ services:
       - HEALTHCHECK_PORT=8080
     volumes:
       - /home/research/homelab/backups/databases/postgres:/backups
+      - postgres-backup-data:/var/lib/postgresql/data
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.20
