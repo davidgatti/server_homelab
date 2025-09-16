@@ -61,160 +61,82 @@ This repository is a centralized place that codifies the whole HomeLab server. T
    sudo apt update && sudo apt install -y mc zip jq cmatrix
    ```
 
-9. **Set up NAS mounting** (with resilience for disconnections):
+9. **Set up NAS mounting** (backup and media shares):
 
    First, ensure cifs-utils is installed:
 
    ```bash
-   dpkg -s cifs-utils &>/dev/null || (echo "Installing cifs-utils..." && sudo apt update && sudo apt install -y cifs-utils)
+   sudo apt install -y cifs-utils
    ```
 
-   **Note:** These mounts are configured with options to handle network disconnections gracefully. They use `soft` mounting for non-blocking failures and `retry` for reconnection attempts. However, for long-term unavailability (e.g., 30+ minutes), the mounts won't automatically reconnect. For better resilience, we'll set up systemd automount units below, which mount shares on-demand and handle reconnections more robustly.
-
-   **Create systemd automount units for each share:**
-
-   **Dropbox Share:**
+   **Create mount directories and groups:**
 
    ```bash
-   sudo mkdir -p /mnt/nas_dropbox
-   sudo groupadd nas_dropbox
-   sudo chown root:nas_dropbox /mnt/nas_dropbox
-   sudo chmod 0775 /mnt/nas_dropbox
-   sudo usermod -aG nas_dropbox $USER
+   # Create directories
+   sudo mkdir -p /mnt/backup /mnt/nas_media
    
-   # Create mount unit
-   cat <<EOF | sudo tee /etc/systemd/system/mnt-nas_dropbox.mount
-   [Unit]
-   Description=NAS Dropbox Share
-   After=network-online.target
-   Wants=network-online.target
+   # Create groups
+   sudo groupadd nas_backup 2>/dev/null || true
+   sudo groupadd nas_media 2>/dev/null || true
    
-   [Mount]
-   What=//192.168.2.2/dropbox
-   Where=/mnt/nas_dropbox
-   Type=cifs
-   Options=guest,forceuid,forcegid,uid=0,gid=nas_dropbox,file_mode=0664,dir_mode=0775,rw,vers=3.0,soft,retry=5
-   TimeoutSec=30
-   
-   [Install]
-   WantedBy=multi-user.target
-   EOF
-   
-   # Create automount unit
-   cat <<EOF | sudo tee /etc/systemd/system/mnt-nas_dropbox.automount
-   [Unit]
-   Description=Automount NAS Dropbox Share
-   After=network-online.target
-   Wants=network-online.target
-   
-   [Automount]
-   Where=/mnt/nas_dropbox
-   TimeoutIdleSec=300
-   
-   [Install]
-   WantedBy=multi-user.target
-   EOF
-   ```
-
-   **Media Share:**
-
-   ```bash
-   sudo mkdir -p /mnt/nas_media
-   sudo groupadd nas_media
+   # Set permissions
+   sudo chown root:nas_backup /mnt/backup
    sudo chown root:nas_media /mnt/nas_media
-   sudo chmod 0775 /mnt/nas_media
-   sudo usermod -aG nas_media $USER
+   sudo chmod 0775 /mnt/backup /mnt/nas_media
    
-   # Create mount unit
-   cat <<EOF | sudo tee /etc/systemd/system/mnt-nas_media.mount
-   [Unit]
-   Description=NAS Media Share
-   After=network-online.target
-   Wants=network-online.target
-   
-   [Mount]
-   What=//192.168.2.2/media
-   Where=/mnt/nas_media
-   Type=cifs
-   Options=guest,forceuid,forcegid,uid=0,gid=nas_media,file_mode=0664,dir_mode=0775,rw,vers=3.0,soft,retry=5
-   TimeoutSec=30
-   
-   [Install]
-   WantedBy=multi-user.target
-   EOF
-   
-   # Create automount unit
-   cat <<EOF | sudo tee /etc/systemd/system/mnt-nas_media.automount
-   [Unit]
-   Description=Automount NAS Media Share
-   After=network-online.target
-   Wants=network-online.target
-   
-   [Automount]
-   Where=/mnt/nas_media
-   TimeoutIdleSec=300
-   
-   [Install]
-   WantedBy=multi-user.target
-   EOF
+   # Add your user to the groups
+   sudo usermod -aG nas_backup,nas_media $USER
    ```
 
-   **Docker Share:**
+   **Add NAS mounts to fstab:**
+
+   **For shares that require credentials (like backup):**
 
    ```bash
-   sudo mkdir -p /mnt/nas_docker
-   sudo groupadd nas_docker
-   sudo chown root:nas_docker /mnt/nas_docker
-   sudo chmod 0775 /mnt/nas_docker
-   sudo usermod -aG nas_docker $USER
-   
-   # Create mount unit
-   cat <<EOF | sudo tee /etc/systemd/system/mnt-nas_docker.mount
-   [Unit]
-   Description=NAS Docker Share
-   After=network-online.target
-   Wants=network-online.target
-   
-   [Mount]
-   What=//192.168.2.2/docker
-   Where=/mnt/nas_docker
-   Type=cifs
-   Options=guest,forceuid,forcegid,uid=0,gid=nas_docker,file_mode=0664,dir_mode=0775,rw,vers=3.0,soft,retry=5
-   TimeoutSec=30
-   
-   [Install]
-   WantedBy=multi-user.target
+   # Create credentials directory and file (for backup share)
+   sudo mkdir -p /etc/cifs
+   sudo tee /etc/cifs/backup-credentials > /dev/null <<EOF
+   username=your_backup_username
+   password=your_backup_password
    EOF
+   sudo chmod 600 /etc/cifs/backup-credentials
    
-   # Create automount unit
-   cat <<EOF | sudo tee /etc/systemd/system/mnt-nas_docker.automount
-   [Unit]
-   Description=Automount NAS Docker Share
-   After=network-online.target
-   Wants=network-online.target
-   
-   [Automount]
-   Where=/mnt/nas_docker
-   TimeoutIdleSec=300
-   
-   [Install]
-   WantedBy=multi-user.target
-   EOF
+   # Backup share (with credentials)
+   echo "//192.168.2.2/backup /mnt/backup cifs credentials=/etc/cifs/backup-credentials,uid=1000,gid=1000,file_mode=0664,dir_mode=0775,vers=2.0 0 0" | sudo tee -a /etc/fstab
    ```
 
-   **Enable and start the automount units:**
+   **For public shares (like media):**
+
+   ```bash
+   # Media share (guest access)
+   echo "//192.168.2.2/media /mnt/nas_media cifs guest,forceuid,forcegid,uid=0,gid=nas_media,file_mode=0664,dir_mode=0775,rw,vers=2.0 0 0" | sudo tee -a /etc/fstab
+   ```
+
+   **Mount the shares:**
 
    ```bash
    sudo systemctl daemon-reload
-   sudo systemctl enable mnt-nas_dropbox.automount mnt-nas_media.automount mnt-nas_docker.automount
-   sudo systemctl start mnt-nas_dropbox.automount mnt-nas_media.automount mnt-nas_docker.automount
+   sudo mount -a
    ```
 
-10. **Activate the mounts**:
+   **Verify mounts are working:**
+
+   ```bash
+   df -h | grep nas
+   ls -la /mnt/backup /mnt/nas_media
+   ```
+
+   > **Security Note:**
+   > - **Credential files** are stored in `/etc/cifs/` with `600` permissions (root only)
+   > - **Guest access** is used for public shares (media) that don't require authentication
+   > - **Never commit credential files** to version control - they contain sensitive passwords
+
+10. **Log out and back in** to apply group changes:
 
     ```bash
-    sudo systemctl daemon-reload
-    sudo mount -a
+    # Log out and back in, or run:
+    newgrp nas_backup
+    newgrp nas_media
     ```
 
 ### Project Setup

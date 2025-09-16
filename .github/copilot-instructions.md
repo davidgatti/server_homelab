@@ -81,8 +81,8 @@ since this home lab relies on a macvlan setup to give each docker it's own IP, t
 Example:
 
 * docker run --rm --network homelab --ip 192.168.3.200 busybox ping -c 3 192.168.3.10
-* docker run --rm --network homelab --ip 192.168.3.204 busybox ping -c 3 n8n
-* docker run --rm --network homelab --ip 192.168.3.206 busybox wget -q -O- http://n8n/healthz
+* docker run --rm --network homelab --ip 192.168.3.200 busybox ping -c 3 n8n
+* docker run --rm --network homelab --ip 192.168.3.200 busybox wget -q -O- http://n8n/healthz
 
 ## Repository
 
