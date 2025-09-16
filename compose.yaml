@@ -209,6 +209,14 @@ services:
       - /mnt/nas_media:/media:ro
       - jellyfin-config:/config
       - jellyfin-cache:/cache
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"     # 50% of CPU (0.5 cores)
+          memory: 2G      # 2GB RAM limit
+        reservations:
+          cpus: "0.1"     # Reserve at least 10% CPU
+          memory: 512M    # Reserve at least 512MB RAM
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.16
