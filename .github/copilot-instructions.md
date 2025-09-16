@@ -84,6 +84,16 @@ Example:
 * docker run --rm --network homelab --ip 192.168.3.200 busybox ping -c 3 n8n
 * docker run --rm --network homelab --ip 192.168.3.200 busybox wget -q -O- http://n8n/healthz
 
+**Command execution**
+
+Always prevent commands from entering interactive pager mode that would require manual intervention. Use these strategies:
+
+* For git commands: use `--no-pager` flag (e.g., `git --no-pager log`, `git --no-pager diff`)
+* For systemd commands: pipe to `cat` or use `--no-pager` if available (e.g., `systemctl --no-pager status`, `systemd-resolve --status | cat`)
+* For long output: limit with `head`, `tail`, or `grep` instead of showing full output
+* For man pages or help: use `--help` instead of `man` when possible
+* Never use commands that automatically invoke pagers (like `less`, `more`) without piping to `cat`
+
 ## Repository
 
 This repository is a Docker Compose that codifies my HomeLab setup in one repository with the goal to allow me to spin up all the services that i need by just cloning this repo on a new machine and be up and running with little work. Which I don't have much off in the weekedns or after houers. So this repository has to be as autoamted as posible, and as easy to understant. Becasue after work i don't have mcuh brain power left to deal with potential problems.
