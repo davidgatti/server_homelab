@@ -64,19 +64,19 @@ Use Hierarchical Prefix Naming, a file naming convention that uses category-subc
 
 ### Tools
 
-**Standard Docker Compose**: 
+**Standard Docker Compose**:
 
 Use standard Docker Compose commands for all container management. The `.env` file automatically configures network settings.
 
 **Network debugging**
 
-when working with his compose you need to remember that each service is configured to use a macvlan, so you will never ever be able to curl, or ping a service from the host, use a pass throught temporary docker container with a unique IP to test the connection to the server.
+When working with this Compose setup, remember that each service is configured to use a macvlan. You will never be able to curl or ping a service from the host. Use a temporary pass-through Docker container with a unique IP to test the connection to the server.
 
-**docker as a proxy**
+**Docker as a proxy**
 
-since this home lab relies on a macvlan setup to give each docker it's own IP, to allow for dashboard services to run on port 80 and not have to deal with adding a port to the URL and remembering all the different ports, the issue is that you can't ping a service from the host itself, you hage to go through a docker in the same macvlan network. To test conecitivyt or make API calls. Bellow are few example how to use buysbox to achivethis:
+Since this home lab relies on a macvlan setup to give each Docker container its own IP, dashboard services can run on port 80 without needing to add a port to the URL and remember multiple ports. The drawback is that you can’t ping a service directly from the host; you must go through a container in the same macvlan network to test connectivity or make API calls. Below are a few examples of how to use BusyBox to achieve this:
 
-* docker run --rm --network homelab --ip 192.168.3.200 busybox YOUR COMMAND GOSE HERE
+* docker run --rm --network homelab --ip 192.168.3.200 busybox YOUR_COMMAND_GOES_HERE
 
 Example:
 
@@ -88,10 +88,8 @@ Example:
 
 Always prevent commands from entering interactive pager mode that would require manual intervention. Use these strategies:
 
-* For git commands: use `--no-pager` flag (e.g., `git --no-pager log`, `git --no-pager diff`)
-* For systemd commands: pipe to `cat` or use `--no-pager` if available (e.g., `systemctl --no-pager status`, `systemd-resolve --status | cat`)
-* For long output: limit with `head`, `tail`, or `grep` instead of showing full output
-* For man pages or help: use `--help` instead of `man` when possible
+* For git commands: use the `--no-pager` flag (e.g., `git --no-pager log`, `git --no-pager diff`)
+* For systemd commands: use `--no-pager` flag (e.g., `systemctl --no-pager status`, `resolvectl --no-pager status`)
 * Never use commands that automatically invoke pagers (like `less`, `more`) without piping to `cat`
 
 ## Repository
@@ -103,11 +101,11 @@ This repository is a Docker Compose that codifies my HomeLab setup in one reposi
 * **.git**: Repository history.
 * **.github**: Configuration for GitHub platform and tools.
 * **.knowledge**: Collection of Markdown files with in-depth explanations about the project and work style.
-* **config**: Centralized configuration files to keep the repository root clean.
+* **configs**: Centralized configuration files to keep the repository root clean.
 * **scripts**: a collection of usefull bash script to autoamte some aspects of the work.
 
 ### Files
 
+* **.env**: environment variables for network configuration
 * **.gitignore**: things to not track with git
 * **compose.yaml**: this is the main file where the whole HomeLab is configured.
-* **.env**: environment variables for network configuration
