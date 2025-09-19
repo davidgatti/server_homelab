@@ -420,6 +420,9 @@ services:
       - homeassistant-config:/data/homeassistant-config:ro
       - qdrant-data:/data/qdrant-data:ro
       - pgadmin-data:/data/pgadmin-data:ro
+      - paperless-data:/data/paperless-data:ro
+      - paperless-export:/data/paperless-export:ro
+      - paperless-consume:/data/paperless-consume:ro
       # Backup destination organized by network and type (e.g., /mnt/backup/192.168.3.x/volumes)
       - /mnt/backup/${NETWORK_PREFIX:-192.168.5}.x/volumes:/backup
     networks:
