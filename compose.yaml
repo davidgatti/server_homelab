@@ -783,6 +783,130 @@ services:
       retries: 3
       start_period: 30s
 
+  paperless:
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    container_name: paperless
+    hostname: paperless
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    labels:
+      - "homelab.description=Document management system with OCR and automatic organization"
+      - "homelab.purpose=Digitize and organize physical documents with searchable text"
+      - "homelab.category=productivity"
+      - "homelab.docs=https://docs.paperless-ngx.com/"
+    environment:
+      - TZ=Europe/Rome
+      - PAPERLESS_REDIS=redis://redis:6379
+      - PAPERLESS_DBHOST=postgres
+      - PAPERLESS_DBNAME=paperless
+      - PAPERLESS_DBUSER=paperless
+      - PAPERLESS_DBPASS=Paperless2025SecurePass
+      - PAPERLESS_SECRET_KEY=o6PemXWLnea/eBW4SxlMDr26lbI04I+6d35QMLxaJggX6s3q1qKQKPtNRrI/fdTYFOA=
+      - PAPERLESS_TIME_ZONE=Europe/Rome
+      - PAPERLESS_OCR_LANGUAGES=ukr rus
+      - PAPERLESS_OCR_LANGUAGE=eng+ukr+rus+ita+deu
+      - PAPERLESS_URL=http://192.168.5.20
+      - USERMAP_UID=1000
+      - USERMAP_GID=1000
+      # Optional: Enable Tika for Office document support
+      - PAPERLESS_TIKA_ENABLED=1
+      - PAPERLESS_TIKA_ENDPOINT=http://tika:9998
+      - PAPERLESS_TIKA_GOTENBERG_ENDPOINT=http://gotenberg:3000
+      # Enhanced receipt and barcode processing
+      - PAPERLESS_CONSUMER_ENABLE_BARCODES=true
+      - PAPERLESS_CONSUMER_BARCODE_TIFF_SUPPORT=true
+      - PAPERLESS_CONSUMER_ENABLE_ASN_BARCODE=true
+      # Advanced OCR Configuration - All Features Enabled
+      - PAPERLESS_OCR_SKIP_ARCHIVE_FILE=with_text  # Skip OCR if text already exists
+      - PAPERLESS_OCR_CLEAN=clean  # Remove intermediate files automatically
+      - PAPERLESS_OCR_DESKEW=true  # Auto-correct skewed documents
+      - PAPERLESS_OCR_ROTATE_PAGES=true  # Auto-rotate based on text orientation
+      - PAPERLESS_OCR_ROTATE_PAGES_THRESHOLD=12.0  # Rotation sensitivity (degrees)
+      - PAPERLESS_OCR_OUTPUT_TYPE=pdfa  # Generate PDF/A compliant archival files
+      - PAPERLESS_OCR_PAGES=0  # OCR all pages (0 = all, 1 = first page only)
+      - PAPERLESS_OCR_IMAGE_DPI=300  # High-quality OCR processing (300 DPI)
+      - PAPERLESS_OCR_MAX_IMAGE_PIXELS=128000000  # Handle large images (128MP limit)
+      - PAPERLESS_OCR_COLOR_CONVERSION_STRATEGY=RGB  # Preserve color information
+      # Machine Learning Classification - All Features Enabled
+      - PAPERLESS_CONSUMER_ENABLE_CLASSIFIER_TAGS=true  # Auto-assign tags based on content
+      - PAPERLESS_CONSUMER_CLASSIFIER_FILE_FILTER="*.pdf *.png *.jpg *.jpeg *.tiff"  # Process these file types
+      - PAPERLESS_TASK_WORKERS=2  # Parallel processing for ML tasks (adjust based on CPU)
+      - PAPERLESS_AUTO_MATCHING_ALGORITHM=auto  # Use automatic matching for correspondents/types
+      - PAPERLESS_MATCHING_ALGORITHM=auto  # Enable intelligent matching algorithms
+      - PAPERLESS_CONSUMER_ENABLE_CLASSIFIER_CORRESPONDENTS=true  # Auto-assign correspondents
+      - PAPERLESS_CONSUMER_ENABLE_CLASSIFIER_DOCUMENT_TYPES=true  # Auto-assign document types
+      # Workflow Automation Rules - Enhanced Processing
+      - PAPERLESS_CONSUMER_RECURSIVE=true  # Process subdirectories automatically
+      - PAPERLESS_CONSUMER_SUBDIRS_AS_TAGS=true  # Use folder names as tags
+      - PAPERLESS_FILENAME_DATE_ORDER=YMD  # Extract dates from filenames (Year-Month-Day format)
+    volumes:
+      - /mnt/nas_documents/media:/usr/src/paperless/media
+      - paperless-data:/usr/src/paperless/data
+      - paperless-export:/usr/src/paperless/export
+      - paperless-consume:/usr/src/paperless/consume
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.34
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:13  # 19 → 0x13
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  tika:
+    image: apache/tika:latest
+    container_name: tika
+    hostname: tika
+    restart: unless-stopped
+    labels:
+      - "homelab.description=Content analysis and detection toolkit for Paperless document processing"
+      - "homelab.purpose=Extract text and metadata from various document formats"
+      - "homelab.category=utility"
+      - "homelab.docs=https://tika.apache.org/"
+    environment:
+      - TZ=Europe/Rome
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.35
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:15  # 21 → 0x15
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9998"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    container_name: gotenberg
+    hostname: gotenberg
+    restart: unless-stopped
+    labels:
+      - "homelab.description=PDF generation service for Paperless document conversion"
+      - "homelab.purpose=Convert Office documents to PDF format for archival"
+      - "homelab.category=utility"
+      - "homelab.docs=https://gotenberg.dev/"
+    environment:
+      - TZ=Europe/Rome
+    command:
+      - gotenberg
+      - --chromium-disable-javascript=true
+      - --chromium-allow-list=file:///tmp/.*
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.36
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:16  # 22 → 0x16
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
 volumes:
   postgres-data:
     driver: local
@@ -823,6 +947,12 @@ volumes:
   cups-logs:
     driver: local
   nut-data:
+    driver: local
+  paperless-data:
+    driver: local
+  paperless-export:
+    driver: local
+  paperless-consume:
     driver: local
 
 networks:

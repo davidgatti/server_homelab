@@ -73,36 +73,45 @@ This repository is a centralized place that codifies the whole HomeLab server. T
 
    ```bash
    # Create directories
-   sudo mkdir -p /mnt/backup /mnt/nas_media
+   sudo mkdir -p /mnt/backup 
+   sudo mkdir -p /mnt/nas_media
+   sudo mkdir -p /mnt/nas_documents
    
    # Create groups
    sudo groupadd nas_backup 2>/dev/null || true
    sudo groupadd nas_media 2>/dev/null || true
+   sudo groupadd nas_documents 2>/dev/null || true
    
    # Set permissions
    sudo chown root:nas_backup /mnt/backup
    sudo chown root:nas_media /mnt/nas_media
-   sudo chmod 0775 /mnt/backup /mnt/nas_media
+   sudo chown root:nas_documents /mnt/nas_documents
+   
+   sudo chmod 0775 /mnt/backup 
+   sudo chmod 0775 /mnt/nas_media
+   sudo chmod 0775 /mnt/nas_documents
    
    # Add your user to the groups
-   sudo usermod -aG nas_backup,nas_media $USER
+   sudo usermod -aG nas_backup $USER
+   sudo usermod -aG nas_media $USER
+   sudo usermod -aG nas_documents $USER
    ```
 
    **Add NAS mounts to fstab:**
 
    **For shares that require credentials (like backup):**
 
-   ```bash
+   ```shell
    # Create credentials directory and file (for backup share)
    sudo mkdir -p /etc/cifs
-   sudo tee /etc/cifs/backup-credentials > /dev/null <<EOF
-   username=your_backup_username
-   password=your_backup_password
-   EOF
+
+   echo -e "username=backup\npassword=XXXXXXXX" | sudo tee /etc/cifs/documents-credentials > /dev/null
    sudo chmod 600 /etc/cifs/backup-credentials
-   
-   # Backup share (with credentials)
    echo "//192.168.2.2/backup /mnt/backup cifs credentials=/etc/cifs/backup-credentials,uid=1000,gid=1000,file_mode=0664,dir_mode=0775,vers=2.0 0 0" | sudo tee -a /etc/fstab
+
+   echo -e "username=documents\npassword=XXXXXXXX" | sudo tee /etc/cifs/documents-credentials > /dev/null
+   sudo chmod 600 /etc/cifs/documents-credentials
+   echo "//192.168.2.2/documents /mnt/nas_documents cifs credentials=/etc/cifs/documents-credentials,uid=1000,gid=1000,file_mode=0664,dir_mode=0775,vers=2.0 0 0" | sudo tee -a /etc/fstab
    ```
 
    **For public shares (like media):**
@@ -166,6 +175,27 @@ This repository is a centralized place that codifies the whole HomeLab server. T
    ```bash
    docker compose ps
    ```
+
+### Database Setup (One-time)
+
+After starting the services, you need to create database users for certain applications:
+
+**For Paperless (document management):**
+
+```bash
+# Connect to PostgreSQL container
+docker exec -it postgres psql -U admin -d default
+
+# Create paperless user and database
+CREATE USER paperless WITH PASSWORD 'Paperless2025SecurePass';
+CREATE DATABASE paperless OWNER paperless;
+GRANT ALL PRIVILEGES ON DATABASE paperless TO paperless;
+
+# Exit PostgreSQL
+\q
+```
+
+> **Note:** Other services like Docmost automatically create their databases using the admin credentials, but Paperless requires its own dedicated user.
 
 ## Management Commands
 
