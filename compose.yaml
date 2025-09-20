@@ -381,7 +381,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.21
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:38  # 56 → 0x38
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:21  # 56 → 0x38
     command:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
       - '--storage.path=/alertmanager'
@@ -423,6 +423,9 @@ services:
       - paperless-data:/data/paperless-data:ro
       - paperless-export:/data/paperless-export:ro
       - paperless-consume:/data/paperless-consume:ro
+      - metabase-data:/data/metabase-data:ro
+      - metabase-plugins:/data/metabase-plugins:ro
+      - nocodb-data:/data/nocodb-data:ro
       # Backup destination organized by network and type (e.g., /mnt/backup/192.168.3.x/volumes)
       - /mnt/backup/${NETWORK_PREFIX:-192.168.5}.x/volumes:/backup
     networks:
@@ -948,6 +951,36 @@ services:
     depends_on:
       - postgres
 
+  nocodb:
+    image: nocodb/nocodb:latest
+    container_name: nocodb
+    hostname: nocodb
+    restart: unless-stopped
+    labels:
+      - "homelab.description=No-code database platform - Airtable alternative with API support"
+      - "homelab.purpose=Visual database interface with REST/GraphQL APIs and collaborative features"
+      - "homelab.category=productivity"
+      - "homelab.docs=https://docs.nocodb.com/"
+    environment:
+      - TZ=Europe/Rome
+      - PORT=80
+      - NC_AUTH_JWT_SECRET=your-jwt-secret-key-change-this-123456789
+      - NC_PUBLIC_URL=http://${NETWORK_PREFIX:-192.168.5}.38
+      - NC_DISABLE_TELE=true
+    volumes:
+      - nocodb-data:/usr/app/data
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.38
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:38  # 13 → 0x0D
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:80/api/v1/db/meta/nocodb/info || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+
 volumes:
   postgres-data:
     driver: local
@@ -998,6 +1031,8 @@ volumes:
   metabase-data:
     driver: local
   metabase-plugins:
+    driver: local
+  nocodb-data:
     driver: local
 
 networks:
