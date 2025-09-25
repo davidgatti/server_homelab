@@ -1,0 +1,83 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+  log_level: info
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+    tenant_id: ""
+
+scrape_configs:
+  # System log files
+  - job_name: system-logs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: host-system
+          __path__: /var/log/*.log
+    pipeline_stages:
+      - match:
+          selector: '{__path__="/var/log/auth.log"}'
+          stages:
+            - labels:
+                log_type: auth
+      - match:
+          selector: '{__path__="/var/log/kern.log"}'
+          stages:
+            - labels:
+                log_type: kernel
+      - match:
+          selector: '{__path__="/var/log/syslog"}'
+          stages:
+            - labels:
+                log_type: system
+      - match:
+          selector: '{__path__="/var/log/daemon.log"}'
+          stages:
+            - labels:
+                log_type: daemon
+
+  # Systemd journal
+  - job_name: systemd-journal
+    journal:
+      json: false
+      max_age: 12h
+      path: /run/systemd/journal
+      labels:
+        job: host-systemd
+    relabel_configs:
+      - source_labels: ['__journal__systemd_unit']
+        target_label: 'unit'
+      - source_labels: ['__journal_priority']
+        target_label: 'priority'
+      - source_labels: ['__journal__hostname']
+        target_label: 'hostname'
+
+  # Additional system logs
+  - job_name: system-additional
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: host-system-extra
+          __path__: /var/log/{dpkg,apt,ufw,fail2ban}.log
+    pipeline_stages:
+      - match:
+          selector: '{__path__=~"/var/log/(dpkg|apt).*"}'
+          stages:
+            - labels:
+                log_type: package_management
+      - match:
+          selector: '{__path__="/var/log/ufw.log"}'
+          stages:
+            - labels:
+                log_type: firewall
+      - match:
+          selector: '{__path__="/var/log/fail2ban.log"}'
+          stages:
+            - labels:
+                log_type: security

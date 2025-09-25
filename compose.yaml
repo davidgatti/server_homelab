@@ -980,6 +980,41 @@ services:
       retries: 5
       start_period: 60s
 
+  promtail-host:
+    image: grafana/promtail:latest
+    container_name: promtail-host
+    hostname: promtail-host
+    restart: unless-stopped
+    labels:
+      - "homelab.description=Host system log collector - forwards OS logs to Loki for centralized viewing"
+      - "homelab.purpose=Scrape host system logs (/var/log) and systemd journal, forward to Loki for Grafana integration"
+      - "homelab.category=logging"
+      - "homelab.depends=loki"
+      - "homelab.source=/var/log, systemd journal"
+      - "homelab.docs=https://grafana.com/docs/loki/latest/clients/promtail/"
+    user: "0"
+    environment:
+      - TZ=Europe/Rome
+    volumes:
+      - ./configs/promtail/host-promtail.yml:/etc/promtail/config.yml:ro
+      - /var/log:/var/log:ro
+      - /run/systemd/journal:/run/systemd/journal:ro
+      - promtail-host-positions:/tmp
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.39
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:47  # 71 → 0x47
+    depends_on:
+      loki:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep promtail | grep -v grep || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
 
 volumes:
   postgres-data:
@@ -1005,6 +1040,8 @@ volumes:
   loki-data:
     driver: local
   promtail-positions:
+    driver: local
+  promtail-host-positions:
     driver: local
   jellyfin-config:
     driver: local
