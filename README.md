@@ -209,3 +209,24 @@ docker compose ps            # Show service status
 docker compose logs          # Show all logs
 docker compose logs postgres # Show specific service logs
 ```
+
+
+```bash
+# Create gitea database
+docker exec -e PGPASSWORD=password postgres psql -h localhost -U admin -d postgres -c "CREATE USER gitea WITH PASSWORD 'gitea';"
+docker exec -e PGPASSWORD=password postgres psql -h localhost -U admin -d postgres -c "CREATE DATABASE gitea WITH OWNER gitea;"
+docker exec -e PGPASSWORD=password postgres psql -h localhost -U admin -d postgres -c "GRANT ALL PRIVILEGES ON DATABASE gitea TO gitea;"
+```
+
+#### Create Gitea Admin User
+
+```bash
+# Create your admin user (replace with your details)
+docker exec -u git gitea /usr/local/bin/gitea admin user create --admin --username david --password password --email david@local.lan
+```
+
+```bash
+docker exec -u git gitea /usr/local/bin/gitea actions generate-runner-token
+docker exec act-runner sh -c "cd /data && act_runner register --no-interactive --instance http://gitea --token TOKEN" 2>/dev/null || echo "Runner already registered"
+docker restart act-runner
+```

@@ -19,7 +19,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.10
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:0a  # 10 → 0x0A
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:10  # 10 → 0x0A
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/"]
       interval: 30s
@@ -46,7 +46,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.11
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:0b  # 11 → 0x0B
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:11  # 11 → 0x0B
     command:
       - redis-server
       - --appendonly yes
@@ -84,7 +84,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.12
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:35  # 53 → 0x35
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:12  # 53 → 0x35
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U admin -d default"]
       interval: 30s
@@ -113,7 +113,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.13
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:0d  # 13 → 0x0D
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:13  # 13 → 0x0D
     healthcheck:
       test: ["CMD-SHELL", "timeout 10 bash -c '</dev/tcp/localhost/80' || exit 1"]
       interval: 30s
@@ -143,7 +143,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.14
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:0e  # 14 → 0x0E
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:14  # 14 → 0x0E
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/healthz"]
       interval: 30s
@@ -176,7 +176,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.15
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:0f  # 15 → 0x0F
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:15  # 15 → 0x0F
     depends_on:
       postgres:
         condition: service_healthy
@@ -220,7 +220,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.16
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:10  # 16 → 0x10
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:16  # 16 → 0x10
     # No healthcheck as per production configuration
 
   docmost:
@@ -248,7 +248,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.17
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:11  # 17 → 0x11
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:17  # 17 → 0x11
     depends_on:
       postgres:
         condition: service_healthy
@@ -285,7 +285,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.18
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:12  # 18 → 0x12
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:18  # 18 → 0x12
     healthcheck:
       test: ["CMD-SHELL", "timeout 10 bash -c '</dev/tcp/localhost/631' || exit 1"]
       interval: 30s
@@ -318,7 +318,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.19
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:36  # 54 → 0x36
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:19  # 54 → 0x36
 
   postgres-backup:
     image: prodrigestivill/postgres-backup-local
@@ -431,7 +431,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.22
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:39  # 57 → 0x39
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:22  # 57 → 0x39
     healthcheck:
       test: ["CMD", "pgrep", "-f", "backup"]
       interval: 30s
@@ -461,7 +461,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.23
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:3a  # 58 → 0x3A
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:23  # 58 → 0x3A
     depends_on:
       postgres:
         condition: service_healthy
@@ -503,7 +503,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.24
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:3b  # 59 → 0x3B
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:24  # 59 → 0x3B
     depends_on:
       postgres-exporter:
         condition: service_healthy
@@ -540,7 +540,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.25
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:3c  # 60 → 0x3C
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:25  # 60 → 0x3C
     depends_on:
       prometheus:
         condition: service_healthy
@@ -572,7 +572,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.26
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:3d  # 61 → 0x3D
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:26  # 61 → 0x3D
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/metrics"]
       interval: 30s
@@ -605,7 +605,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.27
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:3e  # 62 → 0x3E
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:27  # 62 → 0x3E
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/healthz"]
       interval: 30s
@@ -630,7 +630,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.28
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:40  # 64 → 0x40
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:28  # 64 → 0x40
     depends_on:
       postgres:
         condition: service_healthy
@@ -658,7 +658,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.29
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:41  # 65 → 0x41
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:29  # 65 → 0x41
     depends_on:
       redis:
         condition: service_healthy
@@ -690,7 +690,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.30
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:42  # 66 → 0x42
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:30  # 66 → 0x42
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1"]
       interval: 30s
@@ -722,7 +722,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.31
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:43  # 67 → 0x43
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:31  # 67 → 0x43
     depends_on:
       loki:
         condition: service_healthy
@@ -752,7 +752,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.32
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:44  # 68 → 0x44
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:32  # 68 → 0x44
     healthcheck:
       test: ["CMD-SHELL", "upsc ups@localhost"]
       interval: 60s
@@ -778,7 +778,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.33
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:45  # 69 → 0x45
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:33  # 69 → 0x45
     depends_on:
       nut-upsd:
         condition: service_healthy
@@ -855,7 +855,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.34
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:13  # 19 → 0x13
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:34  # 19 → 0x13
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000"]
       interval: 30s
@@ -878,7 +878,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.35
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:15  # 21 → 0x15
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:35  # 21 → 0x15
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9998"]
       interval: 30s
@@ -905,7 +905,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.36
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:16  # 22 → 0x16
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:36  # 22 → 0x16
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 30s
@@ -1004,7 +1004,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.39
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:47  # 71 → 0x47
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:39  # 71 → 0x47
     depends_on:
       loki:
         condition: service_healthy
@@ -1015,6 +1015,78 @@ services:
       retries: 3
       start_period: 30s
 
+  gitea:
+    image: docker.gitea.com/gitea:1.24.6
+    container_name: gitea
+    hostname: gitea
+    restart: unless-stopped
+    labels:
+      - "homelab.description=Self-hosted Git service with web interface and CI/CD capabilities"
+      - "homelab.purpose=Git repository hosting with code review, issue tracking, and team collaboration"
+      - "homelab.category=development"
+      - "homelab.docs=https://docs.gitea.com/"
+    environment:
+      - TZ=Europe/Rome
+      - USER_UID=1000
+      - USER_GID=1000
+      # Database configuration
+      - GITEA__database__DB_TYPE=postgres
+      - GITEA__database__HOST=postgres:5432
+      - GITEA__database__NAME=gitea
+      - GITEA__database__USER=gitea
+      - GITEA__database__PASSWD=gitea
+      # Server configuration
+      - GITEA__server__DOMAIN=192.168.3.40
+      - GITEA__server__HTTP_PORT=80
+      - GITEA__server__ROOT_URL=http://gitea.lan/
+      - GITEA__server__DISABLE_SSH=false
+      - GITEA__server__SSH_PORT=2222
+      - GITEA__server__SSH_LISTEN_PORT=2222
+      - GITEA__server__START_SSH_SERVER=true
+      # Security
+      - GITEA__security__INSTALL_LOCK=true
+      - GITEA__service__DISABLE_REGISTRATION=true
+      - GITEA__service__REQUIRE_SIGNIN_VIEW=false
+      # Actions
+      - GITEA__actions__ENABLED=true
+      - GITEA__actions__DEFAULT_ACTIONS_URL=https://github.com
+    volumes:
+      - gitea-data:/data
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.40
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:40  # 13 → 0x0D
+    depends_on:
+      - postgres
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/api/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  act-runner:
+    image: gitea/act_runner:latest
+    container_name: act-runner
+    hostname: act-runner
+    restart: unless-stopped
+    labels:
+      - "homelab.description=Gitea Actions runner for executing CI/CD workflows"
+      - "homelab.purpose=Provides compute resources for running Gitea Actions workflows"
+      - "homelab.category=ci-cd"
+      - "homelab.docs=https://docs.gitea.com/usage/actions/act-runner"
+    environment:
+      - TZ=Europe/Rome
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - act-runner-data:/data
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.41
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:41  # 14 → 0x0E
+    depends_on:
+      - gitea
+    # Will need manual registration after first start
 
 volumes:
   postgres-data:
@@ -1070,6 +1142,10 @@ volumes:
   metabase-plugins:
     driver: local
   nocodb-data:
+    driver: local
+  gitea-data:
+    driver: local
+  act-runner-data:
     driver: local
 
 networks:
