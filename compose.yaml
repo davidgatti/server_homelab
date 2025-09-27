@@ -64,7 +64,7 @@ services:
       start_period: 15s
 
   postgres:
-    image: postgres:latest
+    image: postgres:17
     container_name: postgres
     hostname: postgres
     restart: unless-stopped
