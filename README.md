@@ -230,3 +230,7 @@ docker exec -u git gitea /usr/local/bin/gitea actions generate-runner-token
 docker exec act-runner sh -c "cd /data && act_runner register --no-interactive --instance http://gitea --token TOKEN" 2>/dev/null || echo "Runner already registered"
 docker restart act-runner
 ```
+
+docker exec -e PGPASSWORD=password postgres psql -h localhost -U admin -d postgres -c "CREATE USER kanboard WITH PASSWORD 'kanboard';"
+docker exec -e PGPASSWORD=password postgres psql -h localhost -U admin -d postgres -c "CREATE DATABASE kanboard WITH OWNER kanboard;"
+docker exec -e PGPASSWORD=password postgres psql -h localhost -U admin -d postgres -c "GRANT ALL PRIVILEGES ON DATABASE kanboard TO kanboard;"

@@ -1086,7 +1086,40 @@ services:
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:41  # 14 → 0x0E
     depends_on:
       - gitea
-    # Will need manual registration after first start
+    
+  kanboard:
+    image: kanboard/kanboard:latest
+    container_name: kanboard
+    hostname: kanboard
+    restart: unless-stopped
+    labels:
+      - "homelab.description=Free and open source Kanban project management software"
+      - "homelab.purpose=Visual project management with drag-and-drop task boards"
+      - "homelab.category=project-management"
+      - "homelab.docs=https://docs.kanboard.org/"
+      - "homelab.port=80"
+      - "homelab.credentials=admin/admin (first login)"
+    environment:
+      - TZ=Europe/Rome
+      - DATABASE_URL=postgres://kanboard:kanboard@postgres:5432/kanboard
+      - DB_RUN_MIGRATIONS=true
+      - PLUGIN_INSTALLER=false
+    volumes:
+      - kanboard-data:/var/www/app/data
+      - kanboard-plugins:/var/www/app/plugins
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.42
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:42
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/", "||", "exit", "1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
 volumes:
   postgres-data:
@@ -1146,6 +1179,10 @@ volumes:
   gitea-data:
     driver: local
   act-runner-data:
+    driver: local
+  kanboard-data:
+    driver: local
+  kanboard-plugins:
     driver: local
 
 networks:
