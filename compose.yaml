@@ -415,17 +415,31 @@ services:
     volumes:
       # Mount all volumes to be backed up into /data
       - postgres-data:/data/postgres-data:ro
+      - postgres-backup-data:/data/postgres-backup-data:ro
       - grafana-data:/data/grafana-data:ro
+      - prometheus-data:/data/prometheus-data:ro
+      - alertmanager-data:/data/alertmanager-data:ro
+      - redis-data:/data/redis-data:ro
+      - loki-data:/data/loki-data:ro
       - n8n-data:/data/n8n-data:ro
       - homeassistant-config:/data/homeassistant-config:ro
       - qdrant-data:/data/qdrant-data:ro
       - pgadmin-data:/data/pgadmin-data:ro
+      - jellyfin-config:/data/jellyfin-config:ro
+      - docmost-data:/data/docmost-data:ro
+      - docmost-data-storage:/data/docmost-data-storage:ro
+      - cups-config:/data/cups-config:ro
+      - nut-data:/data/nut-data:ro
       - paperless-data:/data/paperless-data:ro
       - paperless-export:/data/paperless-export:ro
       - paperless-consume:/data/paperless-consume:ro
       - metabase-data:/data/metabase-data:ro
       - metabase-plugins:/data/metabase-plugins:ro
       - nocodb-data:/data/nocodb-data:ro
+      - gitea-data:/data/gitea-data:ro
+      - act-runner-data:/data/act-runner-data:ro
+      - kanboard-data:/data/kanboard-data:ro
+      - kanboard-plugins:/data/kanboard-plugins:ro
       # Backup destination organized by network and type (e.g., /mnt/backup/192.168.3.x/volumes)
       - /mnt/backup/${NETWORK_PREFIX:-192.168.5}.x/volumes:/backup
     networks:
