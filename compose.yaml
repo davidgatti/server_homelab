@@ -415,7 +415,6 @@ services:
     volumes:
       # Mount all volumes to be backed up into /data
       - postgres-data:/data/postgres-data:ro
-      - postgres-backup-data:/data/postgres-backup-data:ro
       - grafana-data:/data/grafana-data:ro
       - prometheus-data:/data/prometheus-data:ro
       - alertmanager-data:/data/alertmanager-data:ro
