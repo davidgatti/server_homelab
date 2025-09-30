@@ -1165,6 +1165,38 @@ services:
       retries: 2
       start_period: 30s
 
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    hostname: open-webui
+    restart: unless-stopped
+    labels:
+      - "homelab.description=Open WebUI - ChatGPT-style web interface for AI models (Ollama, OpenAI, etc.)"
+      - "homelab.purpose=Web-based chat interface for interacting with large language models"
+      - "homelab.category=ai"
+      - "homelab.docs=https://docs.openwebui.com/"
+      - "homelab.url=http://192.168.5.13"
+    environment:
+      - TZ=Europe/Rome
+      - PORT=80
+      - WEBUI_URL=http://openwebui.lan
+      - DATA_DIR=/app/backend/data
+      - WEBUI_AUTH=True
+      - ENABLE_SIGNUP=True
+      - WEBUI_SECRET_KEY=open-webui-secret-key-homelab-2024
+    volumes:
+      - open-webui-data:/app/backend/data
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.44
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:44
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+
 volumes:
   postgres-data:
     driver: local
@@ -1229,6 +1261,8 @@ volumes:
   kanboard-plugins:
     driver: local
   quake3-data:
+    driver: local
+  open-webui-data:
     driver: local
 
 networks:
