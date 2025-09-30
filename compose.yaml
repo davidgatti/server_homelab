@@ -1135,6 +1135,37 @@ services:
       retries: 3
       start_period: 30s
 
+  quake3:
+    image: ghcr.io/heyymrdj/docker-k8s-quake3:latest
+    container_name: quake3
+    hostname: quake3
+    restart: unless-stopped
+    labels:
+      - "homelab.description=Quake 3 Arena dedicated game server for multiplayer gaming"
+      - "homelab.purpose=Gaming server providing Quake 3 Arena multiplayer matches"
+      - "homelab.category=gaming"
+      - "homelab.ports=UDP/27960"
+      - "homelab.docs=https://github.com/HeyyMrDJ/docker-k8s-quake3-server"
+    environment:
+      - TZ=Europe/Rome
+    volumes:
+      - ./configs/quake3/server.cfg:/home/ioq3srv/baseq3/docker-quake3.cfg:ro
+      - ./configs/quake3/pak0.pk3:/home/ioq3srv/baseq3/pak0.pk3:ro
+      - ./configs/quake3/maps:/home/ioq3srv/baseq3/maps:ro
+      - quake3-data:/home/ioq3srv
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.43
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:43
+    ports:
+      - "27960:27960/udp"
+    healthcheck:
+      test: ["CMD", "pgrep", "ioq3ded"]
+      interval: 30s
+      timeout: 5s
+      retries: 2
+      start_period: 30s
+
 volumes:
   postgres-data:
     driver: local
@@ -1197,6 +1228,8 @@ volumes:
   kanboard-data:
     driver: local
   kanboard-plugins:
+    driver: local
+  quake3-data:
     driver: local
 
 networks:

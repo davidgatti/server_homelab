@@ -23,3 +23,6 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Game assets (copyrighted content - users must provide their own)
+configs/quake3/pak0.pk3
