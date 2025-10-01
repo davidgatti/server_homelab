@@ -1065,6 +1065,7 @@ services:
       - GITEA__actions__DEFAULT_ACTIONS_URL=https://github.com
     volumes:
       - gitea-data:/data
+      - /mnt/nas_gitea:/data/gitea/packages
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.40

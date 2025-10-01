@@ -102,16 +102,42 @@ This repository is a centralized place that codifies the whole HomeLab server. T
    **For shares that require credentials (like backup):**
 
    ```shell
-   # Create credentials directory and file (for backup share)
+   # Folder Structure
+
+   ## Create credentials directory and file (for backup share)
    sudo mkdir -p /etc/cifs
 
-   echo -e "username=backup\npassword=XXXXXXXX" | sudo tee /etc/cifs/documents-credentials > /dev/null
+   # Backup
+
+   ## Create CIFS credentials file with username and password for the backup share
+   echo -e "username=backup\npassword=XXXXXXXX" | sudo tee /etc/cifs/backup-credentials > /dev/null
+
+   ## Set restrictive permissions (600 = read/write for owner only) to protect credentials
    sudo chmod 600 /etc/cifs/backup-credentials
+   
+   ## Add the backup share mount entry to fstab for automatic mounting at boot
+   ## Format: //server/share /mountpoint filesystem options dump pass
    echo "//192.168.2.2/backup /mnt/backup cifs credentials=/etc/cifs/backup-credentials,uid=1000,gid=1000,file_mode=0664,dir_mode=0775,vers=2.0 0 0" | sudo tee -a /etc/fstab
+
+   # Documents
 
    echo -e "username=documents\npassword=XXXXXXXX" | sudo tee /etc/cifs/documents-credentials > /dev/null
    sudo chmod 600 /etc/cifs/documents-credentials
    echo "//192.168.2.2/documents /mnt/nas_documents cifs credentials=/etc/cifs/documents-credentials,uid=1000,gid=1000,file_mode=0664,dir_mode=0775,vers=2.0 0 0" | sudo tee -a /etc/fstab
+
+   # Gitea
+
+   echo -e "username=gitea\npassword=ngroAjxv3vXQJ2NgRnbQB742eVTFQPkv" | sudo tee /etc/cifs/gitea-credentials > /dev/null
+   sudo chmod 600 /etc/cifs/gitea-credentials
+   echo "//192.168.2.2/gitea /mnt/nas_gitea cifs credentials=/etc/cifs/gitea-credentials,uid=1000,gid=1000,file_mode=0664,dir_mode=0775,vers=2.0 0 0" | sudo tee -a /etc/fstab
+
+   # Enabled
+
+   ## Realod the configuration
+   systemctl daemon-reload
+
+   ## Mount all that is in Fstab
+   sudo mount -a
    ```
 
    **For public shares (like media):**
