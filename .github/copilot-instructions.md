@@ -109,3 +109,5 @@ This repository is a Docker Compose that codifies my HomeLab setup in one reposi
 * **.env**: environment variables for network configuration
 * **.gitignore**: things to not track with git
 * **compose.yaml**: this is the main file where the whole HomeLab is configured.
+
+WARNING: RESTARTING THE WHOLE COMPOSE IS DANGEROUS YOU ARE RUNNING IN PRODUCCTION, FULL RESTART HAS TO BE EXPLAINED.
