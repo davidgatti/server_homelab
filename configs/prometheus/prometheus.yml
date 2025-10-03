@@ -10,7 +10,7 @@ alerting:
   alertmanagers:
     - static_configs:
         - targets:
-          - "192.168.5.21:80"
+          - "alertmanager:80"
 
 # Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
 rule_files:
@@ -23,40 +23,40 @@ scrape_configs:
 
   - job_name: 'alertmanager'
     static_configs:
-      - targets: ['192.168.5.21:80']
+      - targets: ['alertmanager:80']
     metrics_path: '/metrics'
 
   - job_name: 'grafana'
     static_configs:
-      - targets: ['192.168.5.25:80']
+      - targets: ['grafana:80']
     metrics_path: '/metrics'
 
   # cAdvisor for Docker container metrics
   - job_name: 'cadvisor'
     static_configs:
-      - targets: ['192.168.5.27:80']
+      - targets: ['cadvisor:80']
     metrics_path: '/metrics'
 
   # Postgres exporter for database metrics
   - job_name: 'postgres-exporter'
     static_configs:
-      - targets: ['192.168.5.28:9187']
+      - targets: ['pg-exporter:9187']
     metrics_path: '/metrics'
 
   # Blackbox exporter metrics endpoint
-  - job_name: 'blackbox-exporter'
+  - job_name: 'blackbox'
     static_configs:
-      - targets: ['192.168.5.26:80']
+      - targets: ['blackbox:80']
     metrics_path: '/metrics'
 
   # Redis server metrics via redis_exporter
   - job_name: 'redis-exporter'
     static_configs:
-      - targets: ['192.168.5.29:9121']
+      - targets: ['redis-exporter:9121']
     metrics_path: '/metrics'
     scrape_interval: 30s
 
-  # Website and service monitoring via Blackbox Exporter
+  # Website monitoring via Blackbox - Public sites only
   - job_name: 'blackbox-http'
     metrics_path: /probe
     params:
@@ -66,48 +66,22 @@ scrape_configs:
         - https://google.com
         - https://github.com
         - https://docker.io
-        - http://192.168.5.1  # Your router (adjust IP if needed)
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
       - source_labels: [__param_target]
         target_label: instance
       - target_label: __address__
-        replacement: 192.168.5.26:80  # Blackbox exporter address
+        replacement: blackbox:80  # Blackbox service address
 
-  # Internal service monitoring via Blackbox Exporter
-  - job_name: 'blackbox-internal'
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
-    static_configs:
-      - targets:
-        - http://192.168.5.25  # Grafana
-        - http://192.168.5.24  # Prometheus
-        - http://192.168.5.21  # AlertManager
-        - http://192.168.5.23  # pgAdmin
-        - http://192.168.5.27  # cAdvisor
-        - http://192.168.5.30  # Loki
-        - http://192.168.5.31  # Promtail
-        - http://192.168.5.10  # OpenSpeedtest
-        - http://192.168.5.12  # Qdrant
-        - http://192.168.5.13  # n8n
-        - http://192.168.5.15:8096  # Jellyfin
-    relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: 192.168.5.26:80
 
   # Log Management Stack
   - job_name: 'loki'
     static_configs:
-      - targets: ['192.168.5.30:3100']
+      - targets: ['loki:3100']
     metrics_path: '/metrics'
 
   - job_name: 'promtail'
     static_configs:
-      - targets: ['192.168.5.31:9080']
+      - targets: ['promtail:9080']
     metrics_path: '/metrics'

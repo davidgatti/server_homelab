@@ -564,9 +564,9 @@ services:
       retries: 3
       start_period: 60s
 
-  blackbox-exporter:
+  blackbox:
     image: prom/blackbox-exporter:latest
-    container_name: blackbox-exporter
+    container_name: blackbox
     hostname: blackbox
     restart: unless-stopped
     labels:
