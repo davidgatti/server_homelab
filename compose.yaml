@@ -1201,7 +1201,7 @@ services:
   docker-mailserver:
     image: ghcr.io/docker-mailserver/docker-mailserver:latest
     container_name: docker-mailserver
-    hostname: email.lan
+    hostname: docker-mailserver
     restart: unless-stopped
     labels:
       - "homelab.description=Simplified internal mail server for homelab notifications"
@@ -1211,6 +1211,7 @@ services:
       - "homelab.docs=https://docker-mailserver.github.io/docker-mailserver/latest/"
     environment:
       - TZ=Europe/Rome
+      - OVERRIDE_HOSTNAME=email.lan
       - POSTFIX_INET_PROTOCOLS=ipv4
       - DOVECOT_INET_PROTOCOLS=ipv4
       - ENABLE_RSPAMD=0
@@ -1221,7 +1222,8 @@ services:
       - SSL_TYPE=
       - SPOOF_PROTECTION=1
       - PERMIT_DOCKER=network
-      - POSTMASTER_ADDRESS=dawid@email.lan
+      - POSTFIX_MYNETWORKS=127.0.0.0/8 [::1]/128 [fe80::]/64 172.16.0.0/12 ${NETWORK_PREFIX:-192.168.5}.0/24
+      - POSTMASTER_ADDRESS=postmaster@homelab.local
       - LOG_LEVEL=info
       - DMS_DEBUG=0
     volumes:
@@ -1236,6 +1238,54 @@ services:
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:45
     healthcheck:
       test: ["CMD", "sh", "-c", "ss -lntp | grep -q ':25 ' && ss -lntp | grep -q ':587 ' && ss -lntp | grep -q ':143 '"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  mattermost:
+    image: mattermost/mattermost-team-edition:latest
+    container_name: mattermost
+    hostname: mattermost
+    restart: unless-stopped
+    labels:
+      - "homelab.description=Open-source team collaboration platform, Slack alternative"
+      - "homelab.purpose=Team chat, file sharing, integrations, and workflows"
+      - "homelab.category=collaboration"
+      - "homelab.docs=https://docs.mattermost.com/"
+    environment:
+      - TZ=Europe/Rome
+      - MM_SQLSETTINGS_DRIVERNAME=postgres
+      - MM_SQLSETTINGS_DATASOURCE=postgres://mattermost:mattermost@postgres:5432/mattermost?sslmode=disable&connect_timeout=10
+      - MM_SERVICESETTINGS_SITEURL=http://mattermost.lan
+      - MM_SERVICESETTINGS_LISTENADDRESS=:80
+      - MM_EMAILSETTINGS_ENABLEEMAILBATCHING=false
+      - MM_EMAILSETTINGS_EMAILNOTIFICATIONCONTENTSTYPE=full
+      - MM_EMAILSETTINGS_SENDEMAILNOTIFICATIONS=true
+      - MM_EMAILSETTINGS_FEEDBACKNAME=Mattermost
+      - MM_EMAILSETTINGS_FEEDBACKEMAIL=dawid@email.lan
+      - MM_EMAILSETTINGS_REPLYTOADDRESS=dawid@email.lan
+      - MM_EMAILSETTINGS_SMTPSERVER=docker-mailserver
+      - MM_EMAILSETTINGS_SMTPPORT=587
+      - MM_EMAILSETTINGS_SMTPAUTH=false
+      - MM_EMAILSETTINGS_SMTPUSERNAME=
+      - MM_EMAILSETTINGS_SMTPPASSWORD=
+      - MM_EMAILSETTINGS_CONNECTIONSECURITY=
+      - MM_EMAILSETTINGS_SKIPTLSVERIFY=true
+    volumes:
+      - mattermost-config:/mattermost/config
+      - mattermost-data:/mattermost/data
+      - mattermost-logs:/mattermost/logs
+      - mattermost-plugins:/mattermost/plugins
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.46
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:46
+    depends_on:
+      - postgres
+      - docker-mailserver
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/api/v4/system/ping"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -1315,6 +1365,14 @@ volumes:
   mailserver-logs:
     driver: local
   mailserver-config:
+    driver: local
+  mattermost-config:
+    driver: local
+  mattermost-data:
+    driver: local
+  mattermost-logs:
+    driver: local
+  mattermost-plugins:
     driver: local
 
 networks:

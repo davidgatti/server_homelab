@@ -260,3 +260,7 @@ docker restart act-runner
 docker exec -e PGPASSWORD=password postgres psql -h localhost -U admin -d postgres -c "CREATE USER kanboard WITH PASSWORD 'kanboard';"
 docker exec -e PGPASSWORD=password postgres psql -h localhost -U admin -d postgres -c "CREATE DATABASE kanboard WITH OWNER kanboard;"
 docker exec -e PGPASSWORD=password postgres psql -h localhost -U admin -d postgres -c "GRANT ALL PRIVILEGES ON DATABASE kanboard TO kanboard;"
+
+docker exec -e PGPASSWORD=password postgres psql -h localhost -U admin -d postgres -c "CREATE USER mattermost WITH PASSWORD 'mattermost';"
+docker exec -e PGPASSWORD=password postgres psql -h localhost -U admin -d postgres -c "CREATE DATABASE mattermost WITH OWNER mattermost;"
+docker exec -e PGPASSWORD=password postgres psql -h localhost -U admin -d postgres -c "GRANT ALL PRIVILEGES ON DATABASE mattermost TO mattermost;"
