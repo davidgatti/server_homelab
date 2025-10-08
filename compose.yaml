@@ -1198,6 +1198,50 @@ services:
       retries: 3
       start_period: 45s
 
+  docker-mailserver:
+    image: ghcr.io/docker-mailserver/docker-mailserver:latest
+    container_name: docker-mailserver
+    hostname: mail.homelab.local
+    restart: unless-stopped
+    labels:
+      - "homelab.description=Simplified internal mail server for homelab notifications"
+      - "homelab.purpose=Basic SMTP/IMAP server for internal notifications and testing"
+      - "homelab.category=mail"
+      - "homelab.ports=25 (SMTP), 587 (submission), 143 (IMAP)"
+      - "homelab.docs=https://docker-mailserver.github.io/docker-mailserver/latest/"
+    environment:
+      - TZ=Europe/Rome
+      - OVERRIDE_HOSTNAME=mail.homelab.local
+      - POSTFIX_INET_PROTOCOLS=ipv4
+      - DOVECOT_INET_PROTOCOLS=ipv4
+      - ENABLE_RSPAMD=0
+      - ENABLE_CLAMAV=0
+      - ENABLE_FAIL2BAN=0
+      - ENABLE_IMAP=1
+      - ENABLE_POP3=0
+      - SSL_TYPE=
+      - SPOOF_PROTECTION=1
+      - PERMIT_DOCKER=network
+      - POSTMASTER_ADDRESS=postmaster@homelab.local
+      - LOG_LEVEL=info
+      - DMS_DEBUG=0
+    volumes:
+      - mailserver-data:/var/mail/
+      - mailserver-state:/var/mail-state/
+      - mailserver-logs:/var/log/mail/
+      - mailserver-config:/tmp/docker-mailserver/
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.45
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:45
+    healthcheck:
+      test: ["CMD", "sh", "-c", "ss -lntp | grep -q ':25 ' && ss -lntp | grep -q ':587 ' && ss -lntp | grep -q ':143 '"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
 volumes:
   postgres-data:
     driver: local
@@ -1264,6 +1308,14 @@ volumes:
   quake3-data:
     driver: local
   open-webui-data:
+    driver: local
+  mailserver-data:
+    driver: local
+  mailserver-state:
+    driver: local
+  mailserver-logs:
+    driver: local
+  mailserver-config:
     driver: local
 
 networks:
