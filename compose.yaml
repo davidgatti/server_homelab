@@ -1201,7 +1201,7 @@ services:
   docker-mailserver:
     image: ghcr.io/docker-mailserver/docker-mailserver:latest
     container_name: docker-mailserver
-    hostname: mail.homelab.local
+    hostname: email.lan
     restart: unless-stopped
     labels:
       - "homelab.description=Simplified internal mail server for homelab notifications"
@@ -1211,7 +1211,6 @@ services:
       - "homelab.docs=https://docker-mailserver.github.io/docker-mailserver/latest/"
     environment:
       - TZ=Europe/Rome
-      - OVERRIDE_HOSTNAME=mail.homelab.local
       - POSTFIX_INET_PROTOCOLS=ipv4
       - DOVECOT_INET_PROTOCOLS=ipv4
       - ENABLE_RSPAMD=0
@@ -1222,7 +1221,7 @@ services:
       - SSL_TYPE=
       - SPOOF_PROTECTION=1
       - PERMIT_DOCKER=network
-      - POSTMASTER_ADDRESS=postmaster@homelab.local
+      - POSTMASTER_ADDRESS=dawid@email.lan
       - LOG_LEVEL=info
       - DMS_DEBUG=0
     volumes:
