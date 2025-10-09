@@ -1322,6 +1322,72 @@ services:
       retries: 3
       start_period: 15s
 
+  linkwarden-meilisearch:
+    image: getmeili/meilisearch:v1.12.8
+    container_name: linkwarden-meilisearch
+    hostname: linkwarden-meilisearch
+    restart: unless-stopped
+    labels:
+      - "homelab.description=Fast, open-source search engine for Linkwarden full-text search capabilities"
+      - "homelab.purpose=Provides instant search across all bookmarks and content in Linkwarden"
+      - "homelab.category=search"
+      - "homelab.docs=https://docs.meilisearch.com/"
+    environment:
+      - TZ=Europe/Rome
+      - MEILI_MASTER_KEY=linkwarden_master_key_change_in_production
+      - MEILI_ENV=production
+    volumes:
+      - linkwarden-meilisearch-data:/meili_data
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.48
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:48  # 16 → 0x10
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7700/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  linkwarden:
+    image: ghcr.io/linkwarden/linkwarden:latest
+    container_name: linkwarden
+    hostname: linkwarden
+    restart: unless-stopped
+    labels:
+      - "homelab.description=Self-hosted collaborative bookmark manager with link preservation"
+      - "homelab.purpose=Organize, preserve and collaborate on bookmarks with screenshots, PDFs, and full-text search"
+      - "homelab.category=productivity"
+      - "homelab.dashboard=http://192.168.5.17"
+      - "homelab.docs=https://docs.linkwarden.app/"
+    environment:
+      - TZ=Europe/Rome
+      - NEXTAUTH_URL=http://linkwarden.lan/api/v1/auth
+      - NEXTAUTH_SECRET=linkwarden_secret_change_in_production_very_long_random_string
+      - DATABASE_URL=postgresql://linkwarden:linkwarden@postgres:5432/linkwarden
+      - MEILI_HOST=http://linkwarden-meilisearch:7700
+      - MEILI_MASTER_KEY=linkwarden_master_key_change_in_production
+      - PAGINATION_TAKE_COUNT=20
+      - AUTOSCROLL_TIMEOUT=30
+      - NEXT_PUBLIC_DISABLE_REGISTRATION=false
+      - NEXT_PUBLIC_CREDENTIALS_ENABLED=true
+      - PORT=80
+    volumes:
+      - linkwarden-data:/data/data
+    depends_on:
+      - postgres
+      - linkwarden-meilisearch
+    networks:
+      homelab:
+        ipv4_address: ${NETWORK_PREFIX:-192.168.5}.49
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:49  # 17 → 0x11
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
 volumes:
   postgres-data:
     driver: local
@@ -1404,6 +1470,10 @@ volumes:
   mattermost-logs:
     driver: local
   mattermost-plugins:
+    driver: local
+  linkwarden-meilisearch-data:
+    driver: local
+  linkwarden-data:
     driver: local
 
 networks:

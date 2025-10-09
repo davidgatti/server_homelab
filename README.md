@@ -268,3 +268,7 @@ docker exec -e PGPASSWORD=password postgres psql -h localhost -U admin -d postgr
 docker exec -e PGPASSWORD=password postgres psql -h localhost -U admin -d postgres -c "CREATE USER hasura WITH PASSWORD 'hasura';"
 docker exec -e PGPASSWORD=password postgres psql -h localhost -U admin -d postgres -c "CREATE DATABASE hasura WITH OWNER hasura;"
 docker exec -e PGPASSWORD=password postgres psql -h localhost -U admin -d postgres -c "GRANT ALL PRIVILEGES ON DATABASE hasura TO hasura;"
+
+docker exec -e PGPASSWORD=password postgres psql -h localhost -U admin -d postgres -c "CREATE USER linkwarden WITH PASSWORD 'linkwarden';"
+docker exec -e PGPASSWORD=password postgres psql -h localhost -U admin -d postgres -c "CREATE DATABASE linkwarden WITH OWNER linkwarden;"
+docker exec -e PGPASSWORD=password postgres psql -h localhost -U admin -d postgres -c "GRANT ALL PRIVILEGES ON DATABASE linkwarden TO linkwarden;"
