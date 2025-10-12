@@ -19,7 +19,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.10
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:10  # 10 → 0x0A
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:10
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/"]
       interval: 30s
@@ -46,7 +46,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.11
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:11  # 11 → 0x0B
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:11
     command:
       - redis-server
       - --appendonly yes
@@ -84,7 +84,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.12
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:12  # 53 → 0x35
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:12
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U admin -d default"]
       interval: 30s
@@ -113,7 +113,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.13
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:13  # 13 → 0x0D
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:13
     healthcheck:
       test: ["CMD-SHELL", "timeout 10 bash -c '</dev/tcp/localhost/80' || exit 1"]
       interval: 30s
@@ -143,7 +143,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.14
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:14  # 14 → 0x0E
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:14
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/healthz"]
       interval: 30s
@@ -176,7 +176,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.15
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:15  # 15 → 0x0F
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:15
     depends_on:
       postgres:
         condition: service_healthy
@@ -220,7 +220,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.16
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:16  # 16 → 0x10
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:16
     # No healthcheck as per production configuration
 
   docmost:
@@ -248,7 +248,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.17
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:17  # 17 → 0x11
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:17
     depends_on:
       postgres:
         condition: service_healthy
@@ -285,7 +285,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.18
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:18  # 18 → 0x12
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:18
     healthcheck:
       test: ["CMD-SHELL", "timeout 10 bash -c '</dev/tcp/localhost/631' || exit 1"]
       interval: 30s
@@ -318,7 +318,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.19
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:19  # 54 → 0x36
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:19
 
   postgres-backup:
     image: prodrigestivill/postgres-backup-local
@@ -345,13 +345,12 @@ services:
       - BACKUP_KEEP_MONTHS=6
       - HEALTHCHECK_PORT=8080
     volumes:
-      # Database backup destination organized by network and database type (e.g., /mnt/backup/192.168.3.x/databases/postgres)
       - /mnt/backup/${NETWORK_PREFIX:-192.168.5}.x/databases/postgres:/backups
       - postgres-backup-data:/var/lib/postgresql/data
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.20
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:20  # 55 → 0x37
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:20
     depends_on:
       postgres:
         condition: service_healthy
@@ -381,7 +380,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.21
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:21  # 56 → 0x38
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:21
     command:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
       - '--storage.path=/alertmanager'
@@ -439,12 +438,11 @@ services:
       - act-runner-data:/data/act-runner-data:ro
       - kanboard-data:/data/kanboard-data:ro
       - kanboard-plugins:/data/kanboard-plugins:ro
-      # Backup destination organized by network and type (e.g., /mnt/backup/192.168.3.x/volumes)
       - /mnt/backup/${NETWORK_PREFIX:-192.168.5}.x/volumes:/backup
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.22
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:22  # 57 → 0x39
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:22
     healthcheck:
       test: ["CMD", "pgrep", "-f", "backup"]
       interval: 30s
@@ -474,7 +472,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.23
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:23  # 58 → 0x3A
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:23
     depends_on:
       postgres:
         condition: service_healthy
@@ -516,7 +514,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.24
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:24  # 59 → 0x3B
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:24
     depends_on:
       postgres-exporter:
         condition: service_healthy
@@ -553,7 +551,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.25
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:25  # 60 → 0x3C
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:25
     depends_on:
       prometheus:
         condition: service_healthy
@@ -585,7 +583,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.26
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:26  # 61 → 0x3D
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:26
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/metrics"]
       interval: 30s
@@ -618,7 +616,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.27
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:27  # 62 → 0x3E
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:27
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/healthz"]
       interval: 30s
@@ -643,7 +641,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.28
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:28  # 64 → 0x40
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:28
     depends_on:
       postgres:
         condition: service_healthy
@@ -671,7 +669,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.29
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:29  # 65 → 0x41
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:29
     depends_on:
       redis:
         condition: service_healthy
@@ -703,7 +701,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.30
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:30  # 66 → 0x42
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:30
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1"]
       interval: 30s
@@ -735,7 +733,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.31
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:31  # 67 → 0x43
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:31
     depends_on:
       loki:
         condition: service_healthy
@@ -765,7 +763,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.32
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:32  # 68 → 0x44
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:32
     healthcheck:
       test: ["CMD-SHELL", "upsc ups@localhost"]
       interval: 60s
@@ -791,7 +789,7 @@ services:
     networks:
       homelab:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.33
-        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:33  # 69 → 0x45
+        mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:33
     depends_on:
       nut-upsd:
         condition: service_healthy
