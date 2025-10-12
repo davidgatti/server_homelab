@@ -183,7 +183,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-fL", "http://localhost"]
+      test: ["CMD", "curl", "-f", "http://localhost"]
       interval: 30s
       timeout: 20s
       retries: 3
@@ -1129,7 +1129,7 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/", "||", "exit", "1"]
+      test: ["CMD", "curl", "-f", "http://localhost/"]
       interval: 30s
       timeout: 10s
       retries: 3
