@@ -255,7 +255,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      test: ["CMD", "curl", "-f", "http://localhost/"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -558,7 +558,7 @@ services:
       prometheus:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/api/health"]
+      test: ["CMD", "curl", "-f", "http://localhost/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -956,7 +956,7 @@ services:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.37
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:37  # 54 → 0x36
     healthcheck:
-      test: ["CMD", "curl", "--fail", "-I", "http://localhost:80/api/health"]
+      test: ["CMD", "curl", "-f", "http://localhost/api/health"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -987,7 +987,7 @@ services:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.38
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:38  # 13 → 0x0D
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:80/api/v1/db/meta/nocodb/info || exit 1"]
+      test: ["CMD", "curl", "-f", "http://localhost/api/v1/db/meta/nocodb/info"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -1073,7 +1073,7 @@ services:
     depends_on:
       - postgres
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/api/healthz"]
+      test: ["CMD", "curl", "-f", "http://localhost/api/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -1192,7 +1192,7 @@ services:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.44
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:44
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      test: ["CMD", "curl", "-f", "http://localhost/"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -1285,7 +1285,7 @@ services:
       - postgres
       - docker-mailserver
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/api/v4/system/ping"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/api/v4/system/ping"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -1316,7 +1316,7 @@ services:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.47
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:47
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:80/v1/version || exit 1"]
+      test: ["CMD", "curl", "-f", "http://localhost/v1/version"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -1382,7 +1382,7 @@ services:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.49
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:49  # 17 → 0x11
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      test: ["CMD", "curl", "-f", "http://localhost"]
       interval: 30s
       timeout: 10s
       retries: 3
