@@ -21,7 +21,7 @@ services:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.10
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:10  # 10 → 0x0A
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/"]
+      test: ["CMD", "curl", "-f", "http://localhost/"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -145,7 +145,7 @@ services:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.14
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:14  # 14 → 0x0E
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/healthz"]
+      test: ["CMD", "curl", "-f", "http://localhost/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -389,7 +389,7 @@ services:
       - '--web.listen-address=0.0.0.0:80'
       - '--cluster.listen-address=0.0.0.0:9094'
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/-/healthy"]
+      test: ["CMD", "curl", "-f", "http://localhost/-/healthy"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -479,7 +479,7 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/misc/ping"]
+      test: ["CMD", "curl", "-f", "http://localhost/misc/ping"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -521,7 +521,7 @@ services:
       postgres-exporter:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/-/healthy"]
+      test: ["CMD", "curl", "-f", "http://localhost/-/healthy"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -587,7 +587,7 @@ services:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.26
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:26  # 61 → 0x3D
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/metrics"]
+      test: ["CMD", "curl", "-f", "http://localhost/metrics"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -620,7 +620,7 @@ services:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.27
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:27  # 62 → 0x3E
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/healthz"]
+      test: ["CMD", "curl", "-f", "http://localhost/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
