@@ -891,7 +891,7 @@ services:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.35
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:35  # 21 → 0x15
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9998"]
+      test: ["CMD-SHELL", "timeout 10 bash -c '</dev/tcp/localhost/9998' || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
