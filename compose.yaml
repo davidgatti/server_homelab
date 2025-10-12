@@ -1190,7 +1190,7 @@ services:
         ipv4_address: ${NETWORK_PREFIX:-192.168.5}.44
         mac_address: ${MAC_NETWORK_PREFIX:-02:42:48:4C:05}:44
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/"]
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 30s
       timeout: 10s
       retries: 3
