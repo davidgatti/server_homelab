@@ -1283,7 +1283,7 @@ services:
       - postgres
       - docker-mailserver
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/api/v4/system/ping"]
+      test: ["CMD", "/mattermost/bin/mattermost", "version"]
       interval: 30s
       timeout: 10s
       retries: 3
